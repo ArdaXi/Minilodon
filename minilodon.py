@@ -89,6 +89,7 @@ class Kicker(Thread):
         self.nick = nick
         self.resetter = Event()
         self.canceled = False
+        self.daemon = True
         
     def run(self):
         while not self.canceled:
