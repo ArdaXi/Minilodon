@@ -3,6 +3,9 @@ import time
 from threading import Thread, Event
 from datetime import datetime
 import json
+import urlparse
+from youtube_dl import YoutubeDL
+from youtube_dl.utils import DownloadError
 
 class Minilodon(irc.bot.SingleServerIRCBot):
     def __init__(self, channel, nickname, server, port=6667):
@@ -10,6 +13,8 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         self.channel = channel
         self.logs = {}
         self.kickers = {}
+        self.ydl = YoutubeDL()
+        self.ydl.add_default_info_extractors()
         
     def on_nicknameinuse(self, c, e):
         c.nick(c.get_nickname() + "_")
@@ -20,21 +25,28 @@ class Minilodon(irc.bot.SingleServerIRCBot):
     def on_pubmsg(self, c, e):
         self.log(e)
         nick = e.source.nick
+        if not nick in self.kickers:
+            self.add_kicker(nick)
         self.kickers[nick].reset()
-        if e.arguments()[0].startswith("!"):
-            self.do_command(e, e.arguments()[0])
-        return
+        if e.arguments[0].startswith("!"):
+            self.do_command(e, e.arguments[0])
+            return
+        msg = " ".join(e.arguments)
+        if urlparse.urlsplit(msg).scheme.startswith("http"):
+            self.video(c, msg)
         
     def on_join(self, c, e):
         if e.source.nick == self.connection.get_nickname():
             c.privmsg(e.target, "Hi!")
             self.logs[e.target] = open(e.target + ".log", 'a')
         else:
-            channel = self.channels.items()[0][1]
             nick = e.source.nick
-            kicker = Kicker(self.connection, self.channel, nick)
-            kicker.start()
-            self.kickers[nick] = kicker
+            self.add_kicker(nick)
+
+    def add_kicker(self, nick):
+        kicker = Kicker(self.connection, self.channel, nick)
+        kicker.start()
+        self.kickers[nick] = kicker
         
     def on_nick(self, c, e):
         self.kickers[e.target] = kickers[e.source]
@@ -60,6 +72,14 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         curtime = datetime.now().strftime("%H:%M:%S")
         line = "{0} <{1}> {2}\n".format(curtime, event.source.nick, " ".join(event.arguments))
         self.logs[event.target].write(line)
+
+    def video(self, c, url):
+        try:
+            result = self.ydl.extract_info(url, download=False)
+        except DownloadError:
+            return
+        msg = "[{0}] {1} - {2} views".format(result['extractor_key'], result['title'], result['view_count'])
+        c.privmsg(self.channel, msg)
 
 class Kicker(Thread):
     def __init__(self, connection, channel, nick):
