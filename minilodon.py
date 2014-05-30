@@ -69,7 +69,7 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         self.connection.kick(self.channel, nick, reason)
         
     def log(self, event):
-        curtime = datetime.now().strftime("%H:%M:%S")
+        curtime = datetime.now().strftime("%d-%m-%y %H:%M:%S")
         line = "{0} <{1}> {2}\n".format(curtime, event.source.nick, " ".join(event.arguments))
         self.logs[event.target].write(line)
 
