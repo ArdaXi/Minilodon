@@ -13,7 +13,7 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         self.channel = channel
         self.logs = {}
         self.kickers = {}
-        self.ydl = YoutubeDL()
+        self.ydl = YoutubeDL({'quiet': True})
         self.ydl.add_default_info_extractors()
         
     def on_nicknameinuse(self, c, e):
