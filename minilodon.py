@@ -78,7 +78,11 @@ class Minilodon(irc.bot.SingleServerIRCBot):
             result = self.ydl.extract_info(url, download=False)
         except DownloadError:
             return
-        msg = "[{0}] {1} - {2:,} views".format(result['extractor_key'], result['title'], result['view_count'])
+        if 'view_count' in result:
+            views = "- {:,} views".format(result['view_count'])
+        else:
+            views = ""
+        msg = "[{0}] {1} {2}".format(result['extractor_key'], result['title'], views)
         c.privmsg(self.channel, msg)
 
 class Kicker(Thread):
