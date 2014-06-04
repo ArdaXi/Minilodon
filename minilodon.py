@@ -8,9 +8,16 @@ from youtube_dl import YoutubeDL
 from youtube_dl.utils import DownloadError
 
 class Minilodon(irc.bot.SingleServerIRCBot):
-    def __init__(self, channel, nickname, server, port=6667):
+    def __init__(self, config):
+        with open(config) as f:
+            config = json.load(f)
+        server = config['server']
+        port = config['port']
+        nickname = config['nick']
         irc.bot.SingleServerIRCBot.__init__(self, [(server, port)], nickname, nickname)
-        self.channel = channel
+        self.channel = config['mainchannel']
+        with open("actions.json") as f:
+            self.actions = json.load(f)
         self.logs = {}
         self.kickers = {}
         self.ydl = YoutubeDL({'quiet': True})
@@ -29,7 +36,7 @@ class Minilodon(irc.bot.SingleServerIRCBot):
             self.add_kicker(nick)
         self.kickers[nick].reset()
         if e.arguments[0].startswith("!"):
-            self.do_command(e, e.arguments[0])
+            self.do_command(e, e.arguments[0][1:])
             return
         msg = " ".join(e.arguments)
         if urlparse.urlsplit(msg).scheme.startswith("http"):
@@ -60,10 +67,12 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         channel = e.target
         nick = e.source.nick
         c = self.connection
-        if cmd == "!food":
-            c.privmsg(channel, "Go make your own damn food!")
+        actions = self.actions
+        args = cmd.split(" ")
+        if args[0] in actions and args[1] in actions[args[0]]:
+            c.action(channel, actions[args[0]][args[1]])
         else:
-            c.notice(channel, "Not understood: " + cmd)
+            c.notice(channel, "Not found: " + cmd)
             
     def kick(self, nick, reason):
         self.connection.kick(self.channel, nick, reason)
@@ -116,14 +125,7 @@ class Kicker(Thread):
         self.reset()
     
 def main():
-    with open("config.json") as f:
-        config = json.load(f)
-    server = config['server']
-    port = config['port']
-    channel = config['mainchannel']
-    nickname = config['nick']
-
-    bot = Minilodon(channel, nickname, server, port)
+    bot = Minilodon("config.json")
     
     try:
         bot.start()
