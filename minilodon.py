@@ -79,7 +79,7 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         except DownloadError:
             return
         if 'view_count' in result:
-            views = "- {:,} views".format(result['view_count'])
+            views = "| {:,} views".format(result['view_count'])
         else:
             views = ""
         msg = "[{0}] {1} {2}".format(result['extractor_key'], result['title'], views)
