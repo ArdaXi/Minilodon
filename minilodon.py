@@ -148,15 +148,3 @@ class Kicker(Thread):
     def changenick(self, nick):
         self.nick = nick
         self.reset()
-    
-def main():
-    bot = Minilodon("config.json")
-    
-    try:
-        bot.start()
-    except KeyboardInterrupt:
-        bot.die()
-        raise
-
-if __name__ == "__main__":
-    main()
