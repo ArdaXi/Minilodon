@@ -1,4 +1,4 @@
-from . import minilodon
+from .minilodon import Minilodon
 
 bot = Minilodon("config.json")
 
