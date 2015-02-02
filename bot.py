@@ -1,5 +1,6 @@
 from .minilodon import Minilodon
 import json
+import urlparse
 from youtube_dl import YoutubeDL
 from youtube_dl.utils import DownloadError
 

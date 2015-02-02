@@ -3,7 +3,6 @@ import time
 from threading import Thread, Event
 from datetime import datetime
 import json
-import urlparse
 
 class Minilodon(irc.bot.SingleServerIRCBot):
     def __init__(self, config):
