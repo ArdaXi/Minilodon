@@ -25,6 +25,7 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         
     def on_welcome(self, c, e):
         c.join(self.channel)
+        c.join(self.control_channel)
     
     def on_pubmsg(self, c, e):
         self.log(e)
@@ -54,6 +55,8 @@ class Minilodon(irc.bot.SingleServerIRCBot):
             c.privmsg(e.target, "Hi!")
             self.logs[e.target] = open(e.target + ".log", 'a')
         else:
+            if e.target != self.channel:
+                return
             nick = e.source.nick
             self.add_kicker(nick)
 
