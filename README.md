@@ -17,14 +17,15 @@ looks like this:
 Anyone in the config channel is assumed to have admin privileges, please
 ensure proper access control is in place.
 
-Features:
+## Features:
+
 - Kicks anyone after an hour of inactivity.
 - Has a simple key-value lookup for any key prefaced with !
 - Keys can be updated from the control channel with `!update <key> <value>`
 - Links will be ran through YoutubeDL, if found will produce title, views.
 - All messages will be logged immediately to a file `<channel>.log`
 
-TODO:
+## TODO:
 
 - Configurable kick timer
 - More avenues of lookup such as wiki or wordpress
