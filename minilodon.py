@@ -23,6 +23,8 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         self.kickers = {}
         self.ydl = YoutubeDL({'quiet': True})
         self.ydl.add_default_info_extractors()
+        self.commands = {}
+        self.control_commands = {}
 
     def load_actions(self):
         with open("actions.json") as f:
@@ -84,6 +86,8 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         c = self.connection
         actions = self.actions
         args = cmd.split(" ")
+        if args[0] in self.commands:
+            return self.commands[arg[0]](c, nick, args)
         if args[0] in actions and args[1] in actions[args[0]]:
             c.action(channel, actions[args[0]][args[1]])
         else:
@@ -91,11 +95,8 @@ class Minilodon(irc.bot.SingleServerIRCBot):
 
     def do_control_command(self, e, cmd):
         args = cmd.split(" ")
-        if args[0] == "update":
-            self.actions[args[1]] = " ".join(args[2:])
-            with open("actions.json", "w") as f:
-                json.dump(self.actions, f, indent=2, separators=(',', ': '),
-                          sort_keys=True)
+        if args[0] in self.control_commands:
+            return self.control_commands[arg[0]](c, nick, args)
             
     def kick(self, nick, reason):
         self.connection.kick(self.channel, nick, reason)
@@ -118,6 +119,15 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         msg = "[{0}] {1} {2}".format(result['extractor_key'], result['title'],
                                      views)
         c.privmsg(self.channel, msg)
+
+    def command(self, cmd, control=False):
+        def decorator(f):
+            if control:
+                self.control_commands[cmd] = f
+            else:
+                self.commands[cmd] = f
+            return f
+        return decorator
 
 class Kicker(Thread):
     def __init__(self, connection, channel, nick):
