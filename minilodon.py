@@ -4,8 +4,6 @@ from threading import Thread, Event
 from datetime import datetime
 import json
 import urlparse
-from youtube_dl import YoutubeDL
-from youtube_dl.utils import DownloadError
 
 class Minilodon(irc.bot.SingleServerIRCBot):
     def __init__(self, config):
@@ -21,8 +19,6 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         self.load_actions()
         self.logs = {}
         self.kickers = {}
-        self.ydl = YoutubeDL({'quiet': True})
-        self.ydl.add_default_info_extractors()
         self.commands = {}
         self.control_commands = {}
 
@@ -52,8 +48,8 @@ class Minilodon(irc.bot.SingleServerIRCBot):
             self.do_command(e, e.arguments[0][1:])
             return
         msg = " ".join(e.arguments)
-        if urlparse.urlsplit(msg).scheme.startswith("http"):
-            self.video(c, msg)
+        if self.message:
+            self.message(nick, msg)
 
     def on_pubmsg_control(self, e):
        if e.arguments[0].startswith("!"):
@@ -87,16 +83,17 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         actions = self.actions
         args = cmd.split(" ")
         if args[0] in self.commands:
-            return self.commands[arg[0]](c, nick, args)
+            return self.commands[arg[0]](nick, args)
         if args[0] in actions and args[1] in actions[args[0]]:
             c.action(channel, actions[args[0]][args[1]])
         else:
             c.notice(channel, "Not found: " + cmd)
 
     def do_control_command(self, e, cmd):
+        c = self.connection
         args = cmd.split(" ")
         if args[0] in self.control_commands:
-            return self.control_commands[arg[0]](c, nick, args)
+            return self.control_commands[arg[0]](nick, args)
             
     def kick(self, nick, reason):
         self.connection.kick(self.channel, nick, reason)
@@ -107,18 +104,15 @@ class Minilodon(irc.bot.SingleServerIRCBot):
                                         " ".join(event.arguments))
         self.logs[event.target].write(line)
 
-    def video(self, c, url):
-        try:
-            result = self.ydl.extract_info(url, download=False)
-        except DownloadError:
-            return
-        if 'view_count' in result:
-            views = "| {:,} views".format(result['view_count'])
-        else:
-            views = ""
-        msg = "[{0}] {1} {2}".format(result['extractor_key'], result['title'],
-                                     views)
-        c.privmsg(self.channel, msg)
+    def send_msg(self, msg, control=False):
+        channel = self.control_channel if control else self.channel
+        self.connection.privmsg(channel, msg)
+
+    def message(self):
+        def decorator(f):
+            self.on_message = f
+            return f
+        return decorator
 
     def command(self, cmd, control=False):
         def decorator(f):
