@@ -16,16 +16,11 @@ class Minilodon(irc.bot.SingleServerIRCBot):
                                             nickname)
         self.channel = config['mainchannel']
         self.control_channel = config['controlchannel']
-        self.load_actions()
         self.logs = {}
         self.kickers = {}
         self.commands = {}
         self.control_commands = {}
 
-    def load_actions(self):
-        with open("actions.json") as f:
-            self.actions = json.load(f)
-        
     def on_nicknameinuse(self, c, e):
         c.nick(c.get_nickname() + "_")
         
@@ -84,8 +79,6 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         args = cmd.split(" ")
         if args[0] in self.commands:
             return self.commands[arg[0]](nick, args)
-        if args[0] in actions and args[1] in actions[args[0]]:
-            c.action(channel, actions[args[0]][args[1]])
         else:
             c.notice(channel, "Not found: " + cmd)
 
@@ -107,6 +100,9 @@ class Minilodon(irc.bot.SingleServerIRCBot):
     def send_msg(self, msg, control=False):
         channel = self.control_channel if control else self.channel
         self.connection.privmsg(channel, msg)
+
+    def send_action(self, action):
+        self.connection.action(self.channel, action)
 
     def message(self):
         def decorator(f):
