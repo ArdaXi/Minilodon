@@ -14,14 +14,19 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         server = config['server']
         port = config['port']
         nickname = config['nick']
-        irc.bot.SingleServerIRCBot.__init__(self, [(server, port)], nickname, nickname)
+        irc.bot.SingleServerIRCBot.__init__(self, [(server, port)], nickname,
+                                            nickname)
         self.channel = config['mainchannel']
-        with open("actions.json") as f:
-            self.actions = json.load(f)
+        self.control_channel = config['controlchannel']
+        self.load_actions()
         self.logs = {}
         self.kickers = {}
         self.ydl = YoutubeDL({'quiet': True})
         self.ydl.add_default_info_extractors()
+
+    def load_actions(self):
+        with open("actions.json") as f:
+            self.actions = json.load(f)
         
     def on_nicknameinuse(self, c, e):
         c.nick(c.get_nickname() + "_")
@@ -31,6 +36,12 @@ class Minilodon(irc.bot.SingleServerIRCBot):
     
     def on_pubmsg(self, c, e):
         self.log(e)
+        if c == self.channel:
+            self.on_pubmsg_main(e)
+        elif c == self.control_channel:
+            self.on_pubmsg_control(e)
+
+    def on_pubmsg_main(self, e):
         nick = e.source.nick
         if not nick in self.kickers:
             self.add_kicker(nick)
@@ -41,6 +52,10 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         msg = " ".join(e.arguments)
         if urlparse.urlsplit(msg).scheme.startswith("http"):
             self.video(c, msg)
+
+    def on_pubmsg_control(self, e):
+       if e.arguments[0].startswith("!"):
+           self.do_control_command(e, e.arguments[0][1:])
         
     def on_join(self, c, e):
         if e.source.nick == self.connection.get_nickname():
@@ -73,13 +88,22 @@ class Minilodon(irc.bot.SingleServerIRCBot):
             c.action(channel, actions[args[0]][args[1]])
         else:
             c.notice(channel, "Not found: " + cmd)
+
+    def do_control_command(self, e, cmd):
+        args = cmd.split(" ")
+        if args[0] == "update":
+            self.actions[args[1]] = " ".join(args[2:])
+            with open("actions.json", "w") as f:
+                json.dump(self.actions, f, indent=2, separators=(',', ': '),
+                          sort_keys=True)
             
     def kick(self, nick, reason):
         self.connection.kick(self.channel, nick, reason)
         
     def log(self, event):
         curtime = datetime.now().strftime("%d-%m-%y %H:%M:%S")
-        line = "{0} <{1}> {2}\n".format(curtime, event.source.nick, " ".join(event.arguments))
+        line = "{0} <{1}> {2}\n".format(curtime, event.source.nick,
+                                        " ".join(event.arguments))
         self.logs[event.target].write(line)
 
     def video(self, c, url):
@@ -91,7 +115,8 @@ class Minilodon(irc.bot.SingleServerIRCBot):
             views = "| {:,} views".format(result['view_count'])
         else:
             views = ""
-        msg = "[{0}] {1} {2}".format(result['extractor_key'], result['title'], views)
+        msg = "[{0}] {1} {2}".format(result['extractor_key'], result['title'],
+                                     views)
         c.privmsg(self.channel, msg)
 
 class Kicker(Thread):
