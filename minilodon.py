@@ -81,7 +81,7 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         c = self.connection
         args = cmd.split(" ")
         if args[0] in self.commands:
-            return self.commands[arg[0]](nick, args)
+            return self.commands[args[0]](nick, args)
         else:
             c.notice(channel, "Not found: " + cmd)
 
