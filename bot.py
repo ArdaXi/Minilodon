@@ -10,10 +10,10 @@ ydl = YoutubeDL({'quiet': True})
 ydl.add_default_info_extractors()
 logger = logging.getLogger(__name__)
 
-actions = {}
-
 @bot.command("update", True)
 def update(nick, args):
+    with open("actions.json") as f:
+        actions = json.load(f)
     category = args[1]
     key = args[2]
     msg = " ".join(args[3:])
