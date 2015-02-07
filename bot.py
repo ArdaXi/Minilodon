@@ -54,8 +54,9 @@ def load_actions():
         def _(category):
             def lookup(nick, args):
                 key = args[1]
+                victim = args[2]
                 if key in actions[category]:
-                    bot.send_action(actions[category][key])
+                    bot.send_action(actions[category][key].format(victim=victim, nick=nick))
                 else:
                     bot.send_msg("Didn't find {} in {}.".format(key, category))
             bot.commands[category] = lookup
