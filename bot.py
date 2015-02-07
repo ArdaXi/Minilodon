@@ -16,8 +16,7 @@ def update(nick, args):
     if len(args) < 4:
         bot.send_msg("Usage: !update <category> <key> <msg>", True)
         return
-    with open("actions.json") as f:
-        actions = json.load(f)
+    actions = parse_actions("actions.json")
     category = args[1]
     key = args[2]
     msg = " ".join(args[3:])
@@ -30,7 +29,7 @@ def update(nick, args):
     load_actions()
     bot.send_msg("{} added to {}.".format(key, category), True)
 
-@bot.command("idle", True):
+@bot.command("idle", True)
 def idle(nick, args):
     curtime = time.time()
     for result in bot.get_idle_times():
@@ -44,6 +43,18 @@ def idle(nick, args):
                                                                      minutes,
                                                                      seconds)
         bot.send_msg(msg, True)
+
+@bot.command("list")
+def list_all(nick, args):
+    if len(args) != 2:
+        bot.send_msg("Usage: !list <category>")
+    actions = parse_actions("actions.json")
+    category = args[1]
+    if category not in actions:
+        bot.send_msg("{} niet gevonden.".format(category))
+    msg = "Alle {}: {}".format(category, ", ".join(actions[category].items())
+    bot.send_priv_msg(nick, msg)
+    bot.send_msg("Zie prive voor een lijst van alle opties.")
 
 @bot.message()
 def on_message(nick, msg):
@@ -63,9 +74,12 @@ def video(msg):
                                  views)
     bot.send_msg(msg)
 
+def parse_actions(filename):
+    with open(filename):
+        return json.load(f)
+
 def load_actions():
-    with open("actions.json") as f:
-        actions = json.load(f)
+    actions = parse_actions("actions.json")
     for category in actions:
         def _(category):
             def lookup(nick, args):
