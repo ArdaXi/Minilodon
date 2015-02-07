@@ -11,7 +11,7 @@ looks like this:
       "port": 6667,
       "nick": "Minilodon",
       "mainchannel": "#Minilodon",
-      "configchannel": "#Minilodon-admin"
+      "controlchannel": "#Minilodon-admin"
     }
 
 Anyone in the config channel is assumed to have admin privileges, please
