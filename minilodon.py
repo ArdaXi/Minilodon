@@ -79,7 +79,6 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         channel = e.target
         nick = e.source.nick
         c = self.connection
-        actions = self.actions
         args = cmd.split(" ")
         if args[0] in self.commands:
             return self.commands[arg[0]](nick, args)
