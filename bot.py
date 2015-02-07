@@ -54,7 +54,10 @@ def load_actions():
         def _(category):
             def lookup(nick, args):
                 key = args[1]
-                victim = args[2]
+                if len(args) > 2:
+                    victim = args[2]
+                else:
+                    victim = nick
                 if key in actions[category]:
                     bot.send_action(actions[category][key].format(victim=victim, nick=nick))
                 else:
