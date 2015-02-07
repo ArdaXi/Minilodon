@@ -67,6 +67,10 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         kicker = Kicker(self.connection, self.channel, nick)
         kicker.start()
         self.kickers[nick] = kicker
+
+    def get_idle_times(self):
+        for nick in self.kickers:
+            yield (nick, self.kickers[nick].time)
         
     def on_nick(self, c, e):
         self.kickers[e.target] = kickers[e.source]
@@ -133,9 +137,11 @@ class Kicker(Thread):
         self.resetter = Event()
         self.canceled = False
         self.daemon = True
+        self.time = time.time()
         
     def run(self):
         while not self.canceled:
+            self.time = time.time()
             self.resetter.wait(3600.0)
             if not self.resetter.isSet() and not self.canceled:
                 self.connection.kick(self.channel, self.nick, "Idle too long!")
