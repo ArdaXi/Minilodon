@@ -36,7 +36,7 @@ def on_message(nick, msg):
 
 def video(msg):
     try:
-        result = ydl.extract_info(url, download=False)
+        result = ydl.extract_info(msg, download=False)
     except DownloadError:
         return
     if 'view_count' in result:
