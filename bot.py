@@ -75,7 +75,7 @@ def video(msg):
     bot.send_msg(msg)
 
 def parse_actions(filename):
-    with open(filename):
+    with open(filename) as f:
         return json.load(f)
 
 def load_actions():
