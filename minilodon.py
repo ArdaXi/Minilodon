@@ -45,8 +45,8 @@ class Minilodon(irc.bot.SingleServerIRCBot):
             self.do_command(e, e.arguments[0][1:])
             return
         msg = " ".join(e.arguments)
-        if self.message:
-            self.message(nick, msg)
+        if self.on_message:
+            self.on_message(nick, msg)
 
     def on_pubmsg_control(self, e):
        if e.arguments[0].startswith("!"):
