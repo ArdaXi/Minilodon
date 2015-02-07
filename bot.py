@@ -44,13 +44,15 @@ def load_actions():
     with open("actions.json") as f:
         actions = json.load(f)
     for category in actions:
-        def lookup(nick, args):
-            key = args[1]
-            if key in actions[category]:
-                bot.send_action(actions[category][key])
-            else:
-                bot.send_msg("Didn't find {} in {}.".format(key, category))
-        bot.commands[category] = lookup
+        def _(category):
+            def lookup(nick, args):
+                key = args[1]
+                if key in actions[category]:
+                    bot.send_action(actions[category][key])
+                else:
+                    bot.send_msg("Didn't find {} in {}.".format(key, category))
+            bot.commands[category] = lookup
+        _(category)
 
 if __name__ == "__main__":
     load_actions()
