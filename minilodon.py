@@ -108,6 +108,11 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         channel = self.control_channel if control else self.channel
         self.connection.privmsg(channel, msg)
 
+    def send_priv_msg(self, target, msg):
+        if target.startswith("#"):
+            raise Exception("That's not a private message!")
+        self.connection.privmsg(target, msg)
+
     def send_action(self, action):
         self.connection.action(self.channel, action)
 
