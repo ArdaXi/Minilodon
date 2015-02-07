@@ -18,7 +18,7 @@ def update(nick, args):
     msg = " ".join(args[2:])
     actions[key] = msg
     with open("actions.json", "w") as f:
-        json.dump(self.actions, f, indent=2, separators=(',', ': '),
+        json.dump(actions, f, indent=2, separators=(',', ': '),
                   sort_keys=True)
     load_actions()
 
