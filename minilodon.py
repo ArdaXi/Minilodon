@@ -89,7 +89,7 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         c = self.connection
         args = cmd.split(" ")
         if args[0] in self.control_commands:
-            return self.control_commands[arg[0]](nick, args)
+            return self.control_commands[args[0]](nick, args)
             
     def kick(self, nick, reason):
         self.connection.kick(self.channel, nick, reason)
