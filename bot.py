@@ -14,9 +14,12 @@ actions = {}
 
 @bot.command("update", True)
 def update(nick, args):
-    key = args[1]
-    msg = " ".join(args[2:])
-    actions[key] = msg
+    category = args[1]
+    key = args[2]
+    msg = " ".join(args[3:])
+    if category not in actions:
+        actions[category] = {}
+    actions[category][key] = msg
     with open("actions.json", "w") as f:
         json.dump(actions, f, indent=2, separators=(',', ': '),
                   sort_keys=True)
