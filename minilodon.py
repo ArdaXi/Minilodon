@@ -3,6 +3,7 @@ import time
 from threading import Thread, Event
 from datetime import datetime
 import json
+import logging
 
 class Minilodon(irc.bot.SingleServerIRCBot):
     def __init__(self, config):
@@ -19,6 +20,7 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         self.kickers = {}
         self.commands = {}
         self.control_commands = {}
+        self.logger = logging.getLogger(__name__)
 
     def on_nicknameinuse(self, c, e):
         c.nick(c.get_nickname() + "_")
@@ -29,9 +31,9 @@ class Minilodon(irc.bot.SingleServerIRCBot):
     
     def on_pubmsg(self, c, e):
         self.log(e)
-        if c == self.channel:
+        if e.target == self.channel:
             self.on_pubmsg_main(e)
-        elif c == self.control_channel:
+        elif e.target == self.control_channel:
             self.on_pubmsg_control(e)
 
     def on_pubmsg_main(self, e):

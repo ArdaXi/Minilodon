@@ -1,12 +1,14 @@
-from .minilodon import Minilodon
+from minilodon import Minilodon
 import json
 import urlparse
 from youtube_dl import YoutubeDL
 from youtube_dl.utils import DownloadError
+import logging
 
 bot = Minilodon("config.json")
 ydl = YoutubeDL({'quiet': True})
 ydl.add_default_info_extractors()
+logger = logging.getLogger(__name__)
 
 actions = {}
 
