@@ -12,6 +12,8 @@ logger = logging.getLogger(__name__)
 
 @bot.command("update", True)
 def update(nick, args):
+    if len(args) < 4:
+        bot.send_msg("Usage: !update <category> <key> <msg>", True)
     with open("actions.json") as f:
         actions = json.load(f)
     category = args[1]
@@ -24,6 +26,7 @@ def update(nick, args):
         json.dump(actions, f, indent=2, separators=(',', ': '),
                   sort_keys=True)
     load_actions()
+    bot.send_msg("{} added to {}.".format(key, category))
 
 @bot.message()
 def on_message(nick, msg):
