@@ -4,6 +4,7 @@ import urlparse
 from youtube_dl import YoutubeDL
 from youtube_dl.utils import DownloadError
 import logging
+import time
 
 bot = Minilodon("config.json")
 ydl = YoutubeDL({'quiet': True})
@@ -28,6 +29,21 @@ def update(nick, args):
                   sort_keys=True)
     load_actions()
     bot.send_msg("{} added to {}.".format(key, category), True)
+
+@bot.command("idle", True):
+def idle(nick, args):
+    curtime = time.time()
+    for result in bot.get_idle_times():
+        nick = result[0]
+        time = result[1]
+        delta = curtime - time
+        hours, remainder = divmod(delta, 3600)
+        minutes, seconds = divmod(remainder, 60)
+        msg = "{} is {} uur, {} minuten en {} seconden idle.".format(nick,
+                                                                     hours,
+                                                                     minutes,
+                                                                     seconds)
+        bot.send_msg(msg, True)
 
 @bot.message()
 def on_message(nick, msg):
