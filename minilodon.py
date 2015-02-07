@@ -51,6 +51,7 @@ class Minilodon(irc.bot.SingleServerIRCBot):
     def on_pubmsg_control(self, e):
        if e.arguments[0].startswith("!"):
            self.do_control_command(e, e.arguments[0][1:])
+           self.do_command(e, e.arguments[0][1:])
         
     def on_join(self, c, e):
         if e.source.nick == self.connection.get_nickname():
