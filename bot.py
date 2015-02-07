@@ -49,7 +49,7 @@ def load_actions():
             if key in actions[category]:
                 bot.send_action(actions[category][key])
             else:
-                bot.send_msg("Not found.")
+                bot.send_msg("Didn't find {} in {}.".format(key, category))
         bot.commands[category] = lookup
 
 if __name__ == "__main__":
