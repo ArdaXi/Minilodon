@@ -88,6 +88,7 @@ class Minilodon(irc.bot.SingleServerIRCBot):
     def do_control_command(self, e, cmd):
         c = self.connection
         args = cmd.split(" ")
+        nick = e.source.nick
         if args[0] in self.control_commands:
             return self.control_commands[args[0]](nick, args)
             
