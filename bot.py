@@ -1,6 +1,6 @@
 from minilodon import Minilodon
 import json
-import urlparse
+from urllib import parse
 from youtube_dl import YoutubeDL
 from youtube_dl.utils import DownloadError
 import logging
@@ -58,7 +58,7 @@ def list_all(nick, args):
 
 @bot.message()
 def on_message(nick, msg):
-    if urlparse.urlsplit(msg).scheme.startswith("http"):
+    if parse.urlsplit(msg).scheme.startswith("http"):
         video(msg)
 
 def video(msg):
