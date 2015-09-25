@@ -10,6 +10,7 @@ looks like this:
       "server": "irc.example.com",
       "port": 6667,
       "nick": "Minilodon",
+      "password": "rycbar123",
       "mainchannel": "#Minilodon",
       "controlchannel": "#Minilodon-admin"
     }

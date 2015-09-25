@@ -16,6 +16,7 @@ class Minilodon(irc.bot.SingleServerIRCBot):
                                             nickname)
         self.channel = config['mainchannel']
         self.control_channel = config['controlchannel']
+        self.password = config['password'] if 'password' in config else None
         self.logs = {}
         self.kickers = {}
         self.commands = {}
@@ -26,6 +27,8 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         c.nick(c.get_nickname() + "_")
         
     def on_welcome(self, c, e):
+        if self.password:
+            self.send_priv_msg('NickServ', 'IDENTIFY ' + self.password) 
         c.join(self.channel)
         c.join(self.control_channel)
     
