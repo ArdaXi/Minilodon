@@ -56,7 +56,7 @@ class Minilodon(irc.bot.SingleServerIRCBot):
     def on_join(self, c, e):
         if e.source.nick == self.connection.get_nickname():
             c.privmsg(e.target, "Hi!")
-            self.logs[e.target] = open(e.target + ".log", 'a')
+            self.logs[e.target] = open(e.target + ".log", 'at', 1)
         else:
             if e.target != self.channel:
                 return
