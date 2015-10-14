@@ -4,6 +4,7 @@ from threading import Thread, Event
 from datetime import datetime
 import json
 import logging
+import os
 
 class Minilodon(irc.bot.SingleServerIRCBot):
     def __init__(self, config):
@@ -59,12 +60,20 @@ class Minilodon(irc.bot.SingleServerIRCBot):
     def on_join(self, c, e):
         if e.source.nick == self.connection.get_nickname():
             c.privmsg(e.target, "Hi!")
-            self.logs[e.target] = open(e.target + ".log", 'at', 1)
+            self.logs[e.target] = self.open_log_file(e.target)
         else:
             if e.target != self.channel:
                 return
             nick = e.source.nick
             self.add_kicker(nick)
+
+    def open_log_file(self, channel):
+        if not os.path.exists(channel):
+            os.mkdir(channel)
+        curdate = datetime.now().strftime("%y-%m-%d")
+        self.day = curdate.day
+        filename = "{}/{}-{}.log".format(channel, curdate, channel)
+        return open(filename, 'at', 1)
 
     def add_kicker(self, nick):
         kicker = Kicker(self.connection, self.channel, nick)
@@ -102,10 +111,19 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         self.connection.kick(self.channel, nick, reason)
         
     def log(self, event):
-        curtime = datetime.now().strftime("%d-%m-%y %H:%M:%S")
-        line = "{0} <{1}> {2}\n".format(curtime, event.source.nick,
+        curtime = datetime.now()
+        if not curtime.day == self.day:
+            self.reopen_logs()
+        timestr = curtime.strftime("%d-%m-%y %H:%M:%S")
+        line = "{0} <{1}> {2}\n".format(timestr, event.source.nick,
                                         " ".join(event.arguments))
         self.logs[event.target].write(line)
+
+    def reopen_logs(self):
+        for channel in self.logs:
+            oldfile = self.logs[channel]
+            self.logs[channel] = open_log_file(channel)
+            oldfile.close()
 
     def send_msg(self, msg, control=False):
         channel = self.control_channel if control else self.channel
