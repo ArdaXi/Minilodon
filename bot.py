@@ -41,10 +41,8 @@ def idle(nick, args):
         delta = curtime - idletime
         hours, remainder = divmod(delta, 3600)
         minutes, seconds = divmod(remainder, 60)
-        msg = "{} is {} uur, {} minuten en {} seconden idle.".format(nick,
-                                                                     hours,
-                                                                     minutes,
-                                                                     seconds)
+        msg = "{} is {:d} uur, {:d} minuten en {:d} seconden idle.".format(
+          nick, int(round(hours)), int(round(minutes)), int(round(seconds)))
         bot.send_msg(msg, True)
 
 def stop_spy():
@@ -71,6 +69,7 @@ def spy(nick, args):
 def list_all(nick, args):
     if len(args) != 2:
         bot.send_msg("Usage: !list <category>")
+        return
     actions = parse_actions("actions.json")
     category = args[1]
     if category not in actions:
