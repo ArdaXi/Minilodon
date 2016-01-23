@@ -46,3 +46,4 @@ Functions can use the `bot.send_msg(message, control)` and
 - Configurable kick timer
 - More avenues of lookup such as wiki or wordpress
 - Look into changing kick timer at runtime
+- Add delete command
