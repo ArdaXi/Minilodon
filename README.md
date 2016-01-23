@@ -26,7 +26,7 @@ Currently, the bot can be started by simply invoking `bot.py`.
 
 - Kicks anyone after an hour of inactivity.
 - Has a simple key-value lookup for any key prefaced with !
-- Keys can be updated from the control channel with `!update <key> <value>`
+- Keys can be updated from the control channel with `!update <category> <key> <value>`
 - Links will be ran through YoutubeDL, if found will produce title, views.
 - All messages will be logged immediately to a file `<channel>.log`
 

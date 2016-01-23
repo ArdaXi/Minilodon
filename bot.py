@@ -89,7 +89,7 @@ def video(msg):
         result = ydl.extract_info(msg, download=False)
     except DownloadError:
         return
-    if 'view_count' in result:
+    if 'view_count' in result and result['view_count'] is not None:
         views = "| {:,} views".format(result['view_count'])
     else:
         views = ""
