@@ -70,9 +70,10 @@ class Minilodon(irc.bot.SingleServerIRCBot):
     def open_log_file(self, channel):
         if not os.path.exists(channel):
             os.mkdir(channel)
-        curdate = datetime.now().strftime("%y-%m-%d")
+        curdate = datetime.now()
+        datestr = curdate.strftime("%y-%m-%d")
         self.day = curdate.day
-        filename = "{}/{}-{}.log".format(channel, curdate, channel)
+        filename = "{}/{}-{}.log".format(channel, datestr, channel)
         return open(filename, 'at', 1)
 
     def add_kicker(self, nick):
