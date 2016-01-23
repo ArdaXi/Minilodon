@@ -74,7 +74,7 @@ def list_all(nick, args):
     category = args[1]
     if category not in actions:
         bot.send_msg("{} niet gevonden.".format(category))
-    msg = "Alle {}: {}".format(category, ", ".join(actions[category].items()))
+    msg = "Alle {}: {}".format(category, ", ".join(actions[category].keys()))
     bot.send_priv_msg(nick, msg)
     bot.send_msg("Zie prive voor een lijst van alle opties.")
 
