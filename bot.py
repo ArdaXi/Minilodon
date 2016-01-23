@@ -106,6 +106,8 @@ def load_actions():
     for category in actions:
         def _(category):
             def lookup(nick, args):
+                if len(args) < 2:
+                    return
                 key = args[1]
                 if len(args) > 2:
                     victim = args[2]
