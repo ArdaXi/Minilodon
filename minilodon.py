@@ -123,7 +123,7 @@ class Minilodon(irc.bot.SingleServerIRCBot):
     def reopen_logs(self):
         for channel in self.logs:
             oldfile = self.logs[channel]
-            self.logs[channel] = open_log_file(channel)
+            self.logs[channel] = self.open_log_file(channel)
             oldfile.close()
 
     def send_msg(self, msg, control=False):
