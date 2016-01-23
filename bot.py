@@ -8,9 +8,9 @@ import time
 from threading import Timer
 
 bot = Minilodon("config.json")
-ydl = YoutubeDL({'quiet': True})
-ydl.add_default_info_extractors()
 logger = logging.getLogger(__name__)
+ydl = YoutubeDL({'quiet': False, 'logger': logger})
+ydl.add_default_info_extractors()
 spy_function = None
 spy_timer = None
 
