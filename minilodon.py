@@ -86,7 +86,7 @@ class Minilodon(irc.bot.SingleServerIRCBot):
             yield (nick, self.kickers[nick].time)
         
     def on_nick(self, c, e):
-        self.kickers[e.target] = kickers[e.source]
+        self.kickers[e.target] = self.kickers[e.source]
         self.kickers[e.target].changenick(e.target)
         del self.kickers[e.source]
         
