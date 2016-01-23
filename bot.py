@@ -37,8 +37,8 @@ def idle(nick, args):
     curtime = time.time()
     for result in bot.get_idle_times():
         nick = result[0]
-        time = result[1]
-        delta = curtime - time
+        idletime = result[1]
+        delta = curtime - idletime
         hours, remainder = divmod(delta, 3600)
         minutes, seconds = divmod(remainder, 60)
         msg = "{} is {} uur, {} minuten en {} seconden idle.".format(nick,
@@ -54,12 +54,14 @@ def stop_spy():
 
 @bot.command("spy", True)
 def spy(nick, args):
+    global spy_function
+    global spy_timer
     if spy_function:
         spy_timer.cancel()
         stop_spy()
         return
     def spier(nick, msg):
-        line = "{}: {}".format(nick, msg)
+        line = "<{}> {}".format(nick, msg)
         bot.send_msg(line, True)
     spy_function = spier
     bot.send_msg("Room {} wordt 15 minuten bespioneerd.".format(bot.channel), True)
