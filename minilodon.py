@@ -15,8 +15,8 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         nickname = config['nick']
         irc.bot.SingleServerIRCBot.__init__(self, [(server, port)], nickname,
                                             nickname)
-        self.channel = config['mainchannel']
-        self.control_channel = config['controlchannel']
+        self.channel = config['mainchannel'].lower()
+        self.control_channel = config['controlchannel'].lower()
         self.password = config['password'] if 'password' in config else None
         self.logs = {}
         self.kickers = {}
