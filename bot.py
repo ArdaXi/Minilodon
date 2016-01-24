@@ -56,6 +56,12 @@ def delete(nick, args):
     load_actions()
     return "{} removed from {}.".format(key, category)
 
+@bot.command("say", True)
+def say(nick, args):
+    if len(args) < 2:
+        return "Usage: !say <msg>"
+    bot.send_msg(" ".join(args[1:]))
+
 @bot.command("join", True)
 def join(nick, args):
     if len(args) != 2:
