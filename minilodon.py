@@ -35,6 +35,7 @@ class Minilodon(irc.bot.SingleServerIRCBot):
     def on_welcome(self, c, e):
         if self.password:
             self.send_priv_msg('NickServ', 'IDENTIFY ' + self.password)
+        c.mode(c.get_nickname(), "-g")
         c.join(self.control_channel)
         c.join(self.channel)
 
@@ -152,8 +153,8 @@ class Minilodon(irc.bot.SingleServerIRCBot):
             self.kickers[e.target].changenick(e.target)
             del self.kickers[e.source.nick]
 
-    #def on_privmsg(self, c, e):
-    #    self.do_command(e, e.arguments()[0])
+    def on_privmsg(self, c, e):
+        self.send_priv_msg(e.source.nick, self.do_command(e, e.arguments[0][1:]))
 
     def do_command(self, e, cmd):
         channel = e.target
@@ -203,8 +204,14 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         self.log(channel, line)
 
     def send_priv_msg(self, target, msg):
-        if target.startswith("#"):
-            raise Exception("That's not a private message!")
+        if msg is None or target.startswith("#"):
+            return
+        if not isinstance(msg, str):
+            for line in msg:
+                self.send_msg(target, line)
+            return
+        if msg[:3] == '/me':
+            return self.send_priv_action(target, msg[4:])
         self.connection.privmsg(target, msg)
 
     def send_action(self, action, control=False):
@@ -214,6 +221,9 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         self.connection.action(channel, action)
         line = "{} {}".format(self.connection.get_nickname(), action)
         self.log(channel, line)
+
+    def send_priv_action(self, target, action):
+        self.connection.action(target, action)
 
     def message(self):
         def decorator(f):
