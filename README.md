@@ -12,7 +12,8 @@ looks like this:
       "nick": "Minilodon",
       "password": "rycbar123",
       "mainchannel": "#Minilodon",
-      "controlchannel": "#Minilodon-admin"
+      "controlchannel": "#Minilodon-admin",
+      "idletime": 3600.0
     }
 
 Anyone in the config channel is assumed to have admin privileges, please

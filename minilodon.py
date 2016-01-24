@@ -18,6 +18,7 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         self.channel = config['mainchannel'].lower()
         self.control_channel = config['controlchannel'].lower()
         self.password = config['password'] if 'password' in config else None
+        self.idletime = config['idletime'] if 'idletime' in config else 3600.0
         self.logs = {}
         self.kickers = {}
         self.commands = {}
@@ -94,7 +95,7 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         return open(filename, 'at', 1)
 
     def add_kicker(self, nick):
-        kicker = Kicker(self.connection, self.channel, nick)
+        kicker = Kicker(self.connection, self.channel, nick, self.idletime)
         kicker.start()
         self.kickers[nick] = kicker
 
@@ -158,7 +159,7 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         channel = self.control_channel if control else self.channel
         self.connection.privmsg(channel, msg)
         mynick = self.connection.get_nickname()
-        line = "<{0}> {1}\n".format(mynick, msg)
+        line = "<{0}> {1}".format(mynick, msg)
         self.log(channel, line)
 
     def send_priv_msg(self, target, msg):
@@ -166,8 +167,12 @@ class Minilodon(irc.bot.SingleServerIRCBot):
             raise Exception("That's not a private message!")
         self.connection.privmsg(target, msg)
 
-    def send_action(self, action):
+    def send_action(self, action, control=False):
+        if action is None:
+            return
         self.connection.action(self.channel, action)
+        line = "{} {}".format(self.connection.get_nickname(), action)
+        self.log(self.channel, line)
 
     def message(self):
         def decorator(f):
@@ -185,11 +190,12 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         return decorator
 
 class Kicker(Thread):
-    def __init__(self, connection, channel, nick):
+    def __init__(self, connection, channel, nick, idletime):
         Thread.__init__(self)
         self.connection = connection
         self.channel = channel
         self.nick = nick
+        self.idletime = idletime
         self.resetter = Event()
         self.canceled = False
         self.daemon = True
@@ -198,7 +204,7 @@ class Kicker(Thread):
     def run(self):
         while not self.canceled:
             self.time = time.time()
-            self.resetter.wait(3600.0)
+            self.resetter.wait(self.idletime)
             if not self.resetter.isSet() and not self.canceled:
                 self.connection.kick(self.channel, self.nick, "Idle too long!")
                 self.canceled = True
