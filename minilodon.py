@@ -37,9 +37,10 @@ class Minilodon(irc.bot.SingleServerIRCBot):
     def on_pubmsg(self, c, e):
         line = "<{0}> {1}".format(e.source.nick, " ".join(e.arguments))
         self.log(e.target, line)
-        if e.target == self.channel:
+        channel = e.target.lower()
+        if channel == self.channel:
             self.on_pubmsg_main(e)
-        elif e.target == self.control_channel:
+        elif channel == self.control_channel:
             self.on_pubmsg_control(e)
 
     def on_pubmsg_main(self, e):
@@ -59,6 +60,9 @@ class Minilodon(irc.bot.SingleServerIRCBot):
 
     def on_action(self, c, e):
         self.log(e.target, "{} {}".format(e.source.nick, " ".join(e.arguments)))
+        if e.target.lower() == self.channel:
+            e.arguments = ["/me"] + e.arguments
+            self.on_pubmsg_main(e)
 
     def on_join(self, c, e):
         if e.source.nick == self.connection.get_nickname():
