@@ -68,11 +68,17 @@ class Minilodon(irc.bot.SingleServerIRCBot):
             self.add_kicker(nick)
 
     def on_part(self, c, e):
-        self.log(e.target, "{} left {}".format(e.source.nick, e.target))
         self.remove_kicker(e.source.nick)
+        self.log(e.target, "{} left {}".format(e.source.nick, e.target))
 
     def on_kick(self, c, e):
-        self.remove_kicker(e.target.nick)
+        channel = e.target
+        kicker = e.source.nick
+        kickee = e.arguments[0]
+        reason = " ".join(e.arguments[1:])
+        self.remove_kicker(kickee)
+        self.log(channel, "{} was kicked from {} by {} ({})".format(kickee, channel,
+                                                                    kicker, reason))
 
     def open_log_file(self, channel):
         if not os.path.exists(channel):
