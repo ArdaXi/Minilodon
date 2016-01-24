@@ -32,6 +32,27 @@ def update(nick, args):
     load_actions()
     bot.send_msg("{} added to {}.".format(key, category), True)
 
+@bot.command("delete", True)
+def delete(nick, args):
+    if len(args) != 3:
+        bot.send_msg("Usage: !delete <category> <key>", True)
+        return
+    actions = parse_actions("actions.json")
+    category = args[1]
+    key = args[2]
+    if category not in actions:
+        bot.send_msg("Category {} not found!".format(category), True)
+        return
+    if key not in actions[category]:
+        bot.send_msg("Key {} not found in {}".format(key, category), True)
+        return
+    del actions[category][key]
+    with open("actions.json", "w") as f:
+        json.dump(actions, f, indent=2, separators=(',', ': '),
+                  sort_keys=True)
+    load_actions()
+    bot.send_msg("{} removed from {}.".format(key, category), True)
+
 @bot.command("idle", True)
 def idle(nick, args):
     curtime = time.time()
