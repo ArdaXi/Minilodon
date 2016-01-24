@@ -38,6 +38,7 @@ def updateme(nick, args):
     args = args[:3] + ["/me"] + args[3:]
     return update(nick, args)
 
+@bot.command("delete", True)
 def delete(nick, args):
     if len(args) != 3:
         return "Usage: !delete <category> <key>"
@@ -54,6 +55,18 @@ def delete(nick, args):
                   sort_keys=True)
     load_actions()
     return "{} removed from {}.".format(key, category)
+
+@bot.command("join", True)
+def join(nick, args):
+    if len(args) != 2:
+        return "Usage: !join <channel>"
+    bot.join(args[1])
+
+@bot.command("part", True)
+def part(nick, args):
+    if len(args) != 2:
+        return "Usage: !part <channel>"
+    bot.part(args[1])
 
 def _idle_time_to_string(data):
     curtime = time.time()

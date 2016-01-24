@@ -19,6 +19,7 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         self.control_channel = config['controlchannel'].lower()
         self.password = config['password'] if 'password' in config else None
         self.idletime = config['idletime'] if 'idletime' in config else 3600.0
+        self.extrachannels = []
         self.logs = {}
         self.kickers = {}
         self.commands = {}
@@ -31,8 +32,8 @@ class Minilodon(irc.bot.SingleServerIRCBot):
     def on_welcome(self, c, e):
         if self.password:
             self.send_priv_msg('NickServ', 'IDENTIFY ' + self.password)
-        c.join(self.channel)
         c.join(self.control_channel)
+        c.join(self.channel)
 
     def on_pubmsg(self, c, e):
         line = "<{0}> {1}".format(e.source.nick, " ".join(e.arguments))
@@ -67,8 +68,8 @@ class Minilodon(irc.bot.SingleServerIRCBot):
 
     def on_join(self, c, e):
         if e.source.nick == self.connection.get_nickname():
-            c.privmsg(e.target, "Hi!")
             self.logs[e.target] = self.open_log_file(e.target)
+            self.send_msg("Joined {}".format(e.target), True)
         else:
             host = e.source.split('!')[1]
             nick = e.source.nick
@@ -78,6 +79,11 @@ class Minilodon(irc.bot.SingleServerIRCBot):
             self.add_kicker(nick)
 
     def on_part(self, c, e):
+        if e.source.nick == self.connection.get_nickname():
+            self.send_msg("Left {}".format(e.target), True)
+            self.logs[e.target].close()
+            del self.logs[e.target]
+            return
         self.remove_kicker(e.source.nick)
         self.log(e.target, "{} left {}".format(e.source.nick, e.target))
 
@@ -89,6 +95,22 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         self.remove_kicker(kickee)
         self.log(channel, "{} was kicked from {} by {} ({})".format(kickee, channel,
                                                                     kicker, reason))
+
+    def join(self, target):
+        channel = target.lower()
+        if channel == self.channel or channel == self.control_channel:
+            return
+        if channel in self.extrachannels:
+            return
+        self.extrachannels.append(channel)
+        self.connection.join(channel)
+
+    def part(self, target):
+        channel = target.lower()
+        if not channel in self.extrachannels:
+            return
+        self.extrachannels.remove(channel)
+        self.connection.part(channel)
 
     def open_log_file(self, channel):
         if not os.path.exists(channel):
