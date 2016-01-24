@@ -51,7 +51,7 @@ class Minilodon(irc.bot.SingleServerIRCBot):
             return
         msg = " ".join(e.arguments)
         if self.on_message:
-            self.on_message(nick, msg)
+            self.send_msg(self.on_message(nick, msg))
 
     def on_pubmsg_control(self, e):
        if e.arguments[0].startswith("!"):
@@ -146,6 +146,10 @@ class Minilodon(irc.bot.SingleServerIRCBot):
 
     def send_msg(self, msg, control=False):
         if msg is None:
+            return
+        if not isinstance(msg, str):
+            for line in msg:
+                self.send_msg(line, control)
             return
         channel = self.control_channel if control else self.channel
         self.connection.privmsg(channel, msg)

@@ -17,8 +17,7 @@ spy_timer = None
 @bot.command("update", True)
 def update(nick, args):
     if len(args) < 4:
-        bot.send_msg("Usage: !update <category> <key> <msg>", True)
-        return
+        return "Usage: !update <category> <key> <msg>"
     actions = parse_actions("actions.json")
     category = args[1]
     key = args[2]
@@ -30,46 +29,44 @@ def update(nick, args):
         json.dump(actions, f, indent=2, separators=(',', ': '),
                   sort_keys=True)
     load_actions()
-    bot.send_msg("{} added to {}.".format(key, category), True)
+    return "{} added to {}.".format(key, category)
 
 @bot.command("delete", True)
 def delete(nick, args):
     if len(args) != 3:
-        bot.send_msg("Usage: !delete <category> <key>", True)
-        return
+        return "Usage: !delete <category> <key>"
     actions = parse_actions("actions.json")
     category = args[1]
     key = args[2]
     if category not in actions:
-        bot.send_msg("Category {} not found!".format(category), True)
-        return
+        return "Category {} not found!".format(category)
     if key not in actions[category]:
-        bot.send_msg("Key {} not found in {}".format(key, category), True)
-        return
+        return "Key {} not found in {}".format(key, category)
     del actions[category][key]
     with open("actions.json", "w") as f:
         json.dump(actions, f, indent=2, separators=(',', ': '),
                   sort_keys=True)
     load_actions()
-    bot.send_msg("{} removed from {}.".format(key, category), True)
+    return "{} removed from {}.".format(key, category)
+
+def _idle_time_to_string(data):
+    curtime = time.time()
+    nick = data[0]
+    idletime = data[1]
+    delta = curtime - idletime
+    hours, remainder = divmod(delta, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    return "{} is {:d} uur, {:d} minuten en {:d} seconden idle.".format(nick,
+      int(round(hours)), int(round(minutes)), int(round(seconds)))
 
 @bot.command("idle", True)
 def idle(nick, args):
-    curtime = time.time()
-    for result in bot.get_idle_times():
-        nick = result[0]
-        idletime = result[1]
-        delta = curtime - idletime
-        hours, remainder = divmod(delta, 3600)
-        minutes, seconds = divmod(remainder, 60)
-        msg = "{} is {:d} uur, {:d} minuten en {:d} seconden idle.".format(
-          nick, int(round(hours)), int(round(minutes)), int(round(seconds)))
-        bot.send_msg(msg, True)
+    return map(_idle_time_to_string, bot.get_idle_times())
 
 def stop_spy():
     spy_function = None
     spy_timer = None
-    bot.send_msg("Spy functie gestopt.", True)
+    return "Spy functie gestopt."
 
 @bot.command("spy", True)
 def spy(nick, args):
@@ -77,34 +74,32 @@ def spy(nick, args):
     global spy_timer
     if spy_function:
         spy_timer.cancel()
-        stop_spy()
-        return
+        return stop_spy()
     def spier(nick, msg):
         line = "<{}> {}".format(nick, msg)
         bot.send_msg(line, True)
     spy_function = spier
-    bot.send_msg("Room {} wordt 15 minuten bespioneerd.".format(bot.channel), True)
     spy_timer = Timer(900.0, stop_spy)
+    return "Room {} wordt 15 minuten bespioneerd.".format(bot.channel)
 
 @bot.command("list")
 def list_all(nick, args):
     if len(args) != 2:
-        bot.send_msg("Usage: !list <category>")
-        return
+        return "Usage: !list <category>"
     actions = parse_actions("actions.json")
     category = args[1]
     if category not in actions:
-        bot.send_msg("{} niet gevonden.".format(category))
+        return "{} niet gevonden.".format(category)
     msg = "Alle {}: {}".format(category, ", ".join(actions[category].keys()))
     bot.send_priv_msg(nick, msg)
-    bot.send_msg("Zie prive voor een lijst van alle opties.")
+    return "Zie prive voor een lijst van alle opties."
 
 @bot.message()
 def on_message(nick, msg):
     if spy_function:
         spy_function(nick, msg)
     if parse.urlsplit(msg).scheme.startswith("http"):
-        video(msg)
+        yield video(msg)
 
 def video(msg):
     try:
@@ -115,9 +110,8 @@ def video(msg):
         views = "| {:,} views".format(result['view_count'])
     else:
         views = ""
-    msg = "[{0}] {1} {2}".format(result['extractor_key'], result['title'],
-                                 views)
-    bot.send_msg(msg)
+    return "[{0}] {1} {2}".format(result['extractor_key'], result['title'],
+                                  views)
 
 def parse_actions(filename):
     with open(filename) as f:
@@ -138,7 +132,7 @@ def load_actions():
                 if key in actions[category]:
                     bot.send_action(actions[category][key].format(victim=victim, nick=nick))
                 else:
-                    bot.send_msg("Didn't find {} in {}.".format(key, category))
+                    return "Didn't find {} in {}.".format(key, category)
             bot.commands[category] = lookup
         _(category)
 
