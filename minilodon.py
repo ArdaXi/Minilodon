@@ -56,14 +56,19 @@ class Minilodon(irc.bot.SingleServerIRCBot):
        if e.arguments[0].startswith("!"):
            self.send_msg(self.do_control_command(e, e.arguments[0][1:]), True)
 
+    def on_action(self, c, e):
+        self.log(e.target, "{} {}".format(e.source.nick, " ".join(e.arguments)))
+
     def on_join(self, c, e):
         if e.source.nick == self.connection.get_nickname():
             c.privmsg(e.target, "Hi!")
             self.logs[e.target] = self.open_log_file(e.target)
         else:
+            host = e.source.split('!')[1]
+            nick = e.source.nick
+            self.log(e.target, "{} [{}] joined {}".format(nick, host, e.target))
             if e.target != self.channel:
                 return
-            nick = e.source.nick
             self.add_kicker(nick)
 
     def on_part(self, c, e):
