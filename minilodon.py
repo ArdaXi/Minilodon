@@ -34,7 +34,8 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         c.join(self.control_channel)
     
     def on_pubmsg(self, c, e):
-        self.log(e)
+        line = "<{0}> {1}\n".format(e.source.nick, " ".join(e.arguments))
+        self.log(e.target, line)
         if e.target == self.channel:
             self.on_pubmsg_main(e)
         elif e.target == self.control_channel:
@@ -66,6 +67,13 @@ class Minilodon(irc.bot.SingleServerIRCBot):
             nick = e.source.nick
             self.add_kicker(nick)
 
+    def on_part(self, c, e):
+        self.log(e.target, "{} left {}".format(e.source.nick, e.target))
+        self.remove_kicker(e.source.nick)
+
+    def on_kick(self, c, e):
+        self.remove_kicker(e.target.nick)
+
     def open_log_file(self, channel):
         if not os.path.exists(channel):
             os.mkdir(channel)
@@ -80,15 +88,21 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         kicker.start()
         self.kickers[nick] = kicker
 
+    def remove_kicker(self, nick):
+        if nick in self.kickers:
+            self.kickers[nick].cancel()
+            del self.kickers[nick]
+
     def get_idle_times(self):
         for nick in self.kickers:
             yield (nick, self.kickers[nick].time)
         
     def on_nick(self, c, e):
-        self.kickers[e.target] = self.kickers[e.source]
-        self.kickers[e.target].changenick(e.target)
-        del self.kickers[e.source]
-        
+        if e.source.nick in self.kickers:
+            self.kickers[e.target] = self.kickers[e.source.nick]
+            self.kickers[e.target].changenick(e.target)
+            del self.kickers[e.source.nick]
+
     #def on_privmsg(self, c, e):
     #    self.do_command(e, e.arguments()[0])
         
@@ -110,14 +124,13 @@ class Minilodon(irc.bot.SingleServerIRCBot):
     def kick(self, nick, reason):
         self.connection.kick(self.channel, nick, reason)
         
-    def log(self, event):
+    def log(self, channel, msg):
         curtime = datetime.now()
         if not curtime.day == self.day:
             self.reopen_logs()
         timestr = curtime.strftime("%d-%m-%y %H:%M:%S")
-        line = "{0} <{1}> {2}\n".format(timestr, event.source.nick,
-                                        " ".join(event.arguments))
-        self.logs[event.target].write(line)
+        line = "{0} {1}\n".format(timestr, msg)
+        self.logs[channel].write(line)
 
     def reopen_logs(self):
         for channel in self.logs:
