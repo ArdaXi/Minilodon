@@ -64,6 +64,8 @@ def idle(nick, args):
     return map(_idle_time_to_string, bot.get_idle_times())
 
 def stop_spy():
+    global spy_function
+    global spy_timer
     spy_function = None
     spy_timer = None
     return "Spy functie gestopt."
