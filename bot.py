@@ -132,7 +132,7 @@ def load_actions():
                 else:
                     victim = nick
                 if key in actions[category]:
-                    bot.send_action(actions[category][key].format(victim=victim, nick=nick))
+                    return '/me ' + actions[category][key].format(victim=victim, nick=nick)
                 else:
                     return "Didn't find {} in {}.".format(key, category)
             bot.commands[category] = lookup

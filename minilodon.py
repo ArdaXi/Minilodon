@@ -57,6 +57,7 @@ class Minilodon(irc.bot.SingleServerIRCBot):
     def on_pubmsg_control(self, e):
        if e.arguments[0].startswith("!"):
            self.send_msg(self.do_control_command(e, e.arguments[0][1:]), True)
+           self.send_msg(self.do_command(e, e.arguments[0][1:]), True)
 
     def on_action(self, c, e):
         self.log(e.target, "{} {}".format(e.source.nick, " ".join(e.arguments)))
@@ -161,6 +162,8 @@ class Minilodon(irc.bot.SingleServerIRCBot):
                 self.send_msg(line, control)
             return
         channel = self.control_channel if control else self.channel
+        if msg[:3] == '/me':
+            return self.send_action(msg[4:], control)
         self.connection.privmsg(channel, msg)
         mynick = self.connection.get_nickname()
         line = "<{0}> {1}".format(mynick, msg)
@@ -174,9 +177,10 @@ class Minilodon(irc.bot.SingleServerIRCBot):
     def send_action(self, action, control=False):
         if action is None:
             return
-        self.connection.action(self.channel, action)
+        channel = self.control_channel if control else self.channel
+        self.connection.action(channel, action)
         line = "{} {}".format(self.connection.get_nickname(), action)
-        self.log(self.channel, line)
+        self.log(channel, line)
 
     def message(self):
         def decorator(f):
