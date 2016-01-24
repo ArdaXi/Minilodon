@@ -29,6 +29,9 @@ class Minilodon(irc.bot.SingleServerIRCBot):
     def on_nicknameinuse(self, c, e):
         c.nick(c.get_nickname() + "_")
 
+    def on_disconnect(self, c, e):
+        raise Exception("Disconnected by {} ({})".format(e.source, " ".join(e.arguments)))
+
     def on_welcome(self, c, e):
         if self.password:
             self.send_priv_msg('NickServ', 'IDENTIFY ' + self.password)
@@ -88,13 +91,21 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         self.log(e.target, "{} left {}".format(e.source.nick, e.target))
 
     def on_kick(self, c, e):
-        channel = e.target
+        channel = e.target.lower()
         kicker = e.source.nick
         kickee = e.arguments[0]
         reason = " ".join(e.arguments[1:])
         self.remove_kicker(kickee)
         self.log(channel, "{} was kicked from {} by {} ({})".format(kickee, channel,
                                                                     kicker, reason))
+        if kickee == self.connection.get_nickname():
+            if channel == self.channel or channel == self.control_channel:
+                raise Exception("Kicked from {} by {} ({})".format(channel, kicker, reason))
+            else:
+                self.send_msg("Kicked from {} by {} ({})".format(channel, kicker, reason), True)
+                self.logs[e.target].close()
+                del self.logs[e.target]
+                self.extrachannels.remove(channel)
 
     def join(self, target):
         channel = target.lower()
