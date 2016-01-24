@@ -31,7 +31,13 @@ def update(nick, args):
     load_actions()
     return "{} added to {}.".format(key, category)
 
-@bot.command("delete", True)
+@bot.command("updateme", True)
+def updateme(nick, args):
+    if len(args) < 4:
+        return "Usage: !updateme <category> <key> <msg>"
+    args = args[:3] + ["/me"] + args[3:]
+    return update(nick, args)
+
 def delete(nick, args):
     if len(args) != 3:
         return "Usage: !delete <category> <key>"
@@ -132,8 +138,8 @@ def load_actions():
                 else:
                     victim = nick
                 if key in actions[category]:
-                    return '/me ' + actions[category][key].format(victim=victim, nick=nick)
-                else:
+                    return actions[category][key].format(victim=victim, nick=nick)
+                elif key not in bot.commands:
                     return "Didn't find {} in {}.".format(key, category)
             bot.commands[category] = lookup
         _(category)
