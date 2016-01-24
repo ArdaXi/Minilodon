@@ -34,7 +34,7 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         c.join(self.control_channel)
 
     def on_pubmsg(self, c, e):
-        line = "<{0}> {1}\n".format(e.source.nick, " ".join(e.arguments))
+        line = "<{0}> {1}".format(e.source.nick, " ".join(e.arguments))
         self.log(e.target, line)
         if e.target == self.channel:
             self.on_pubmsg_main(e)
@@ -48,7 +48,6 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         self.kickers[nick].reset()
         if e.arguments[0].startswith("!"):
             self.send_msg(self.do_command(e, e.arguments[0][1:]))
-            return
         msg = " ".join(e.arguments)
         if self.on_message:
             self.send_msg(self.on_message(nick, msg))
@@ -153,6 +152,9 @@ class Minilodon(irc.bot.SingleServerIRCBot):
             return
         channel = self.control_channel if control else self.channel
         self.connection.privmsg(channel, msg)
+        mynick = self.connection.get_nickname()
+        line = "<{0}> {1}\n".format(mynick, msg)
+        self.log(channel, line)
 
     def send_priv_msg(self, target, msg):
         if target.startswith("#"):
