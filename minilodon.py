@@ -26,13 +26,13 @@ class Minilodon(irc.bot.SingleServerIRCBot):
 
     def on_nicknameinuse(self, c, e):
         c.nick(c.get_nickname() + "_")
-        
+
     def on_welcome(self, c, e):
         if self.password:
-            self.send_priv_msg('NickServ', 'IDENTIFY ' + self.password) 
+            self.send_priv_msg('NickServ', 'IDENTIFY ' + self.password)
         c.join(self.channel)
         c.join(self.control_channel)
-    
+
     def on_pubmsg(self, c, e):
         line = "<{0}> {1}\n".format(e.source.nick, " ".join(e.arguments))
         self.log(e.target, line)
@@ -47,7 +47,7 @@ class Minilodon(irc.bot.SingleServerIRCBot):
             self.add_kicker(nick)
         self.kickers[nick].reset()
         if e.arguments[0].startswith("!"):
-            self.do_command(e, e.arguments[0][1:])
+            self.send_msg(self.do_command(e, e.arguments[0][1:]))
             return
         msg = " ".join(e.arguments)
         if self.on_message:
@@ -55,8 +55,8 @@ class Minilodon(irc.bot.SingleServerIRCBot):
 
     def on_pubmsg_control(self, e):
        if e.arguments[0].startswith("!"):
-           self.do_control_command(e, e.arguments[0][1:])
-        
+           self.send_msg(self.do_control_command(e, e.arguments[0][1:]))
+
     def on_join(self, c, e):
         if e.source.nick == self.connection.get_nickname():
             c.privmsg(e.target, "Hi!")
@@ -102,7 +102,7 @@ class Minilodon(irc.bot.SingleServerIRCBot):
     def get_idle_times(self):
         for nick in self.kickers:
             yield (nick, self.kickers[nick].time)
-        
+
     def on_nick(self, c, e):
         if e.source.nick in self.kickers:
             self.kickers[e.target] = self.kickers[e.source.nick]
@@ -111,7 +111,7 @@ class Minilodon(irc.bot.SingleServerIRCBot):
 
     #def on_privmsg(self, c, e):
     #    self.do_command(e, e.arguments()[0])
-        
+
     def do_command(self, e, cmd):
         channel = e.target
         nick = e.source.nick
@@ -126,10 +126,10 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         nick = e.source.nick
         if args[0] in self.control_commands:
             return self.control_commands[args[0]](nick, args)
-            
+
     def kick(self, nick, reason):
         self.connection.kick(self.channel, nick, reason)
-        
+
     def log(self, channel, msg):
         curtime = datetime.now()
         if not curtime.day == self.day:
@@ -145,6 +145,8 @@ class Minilodon(irc.bot.SingleServerIRCBot):
             oldfile.close()
 
     def send_msg(self, msg, control=False):
+        if msg is None:
+            return
         channel = self.control_channel if control else self.channel
         self.connection.privmsg(channel, msg)
 
@@ -181,7 +183,7 @@ class Kicker(Thread):
         self.canceled = False
         self.daemon = True
         self.time = time.time()
-        
+
     def run(self):
         while not self.canceled:
             self.time = time.time()
@@ -191,14 +193,14 @@ class Kicker(Thread):
                 self.canceled = True
             else:
                 self.resetter.clear()
-                
+
     def reset(self):
         self.resetter.set()
-        
+
     def cancel(self):
         self.canceled = True
         self.resetter.set()
-        
+
     def changenick(self, nick):
         self.nick = nick
         self.reset()
