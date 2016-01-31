@@ -18,10 +18,14 @@ spy_timer = None
 def update(nick, args):
     if len(args) < 4:
         return "Usage: !update <category> <key> <msg>"
-    actions = parse_actions("actions.json")
     category = args[1]
     key = args[2]
     msg = " ".join(args[3:])
+    try:
+        msg.format(victim="victim", nick="nick")
+    except KeyError as e:
+        return "Failed to parse message on {}".format(str(e))
+    actions = parse_actions("actions.json")
     if category not in actions:
         actions[category] = {}
     actions[category][key] = msg
