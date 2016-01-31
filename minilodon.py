@@ -40,9 +40,9 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         c.join(self.channel)
 
     def on_pubmsg(self, c, e):
-        line = "<{0}> {1}".format(e.source.nick, " ".join(e.arguments))
-        self.log(e.target, line)
         channel = e.target.lower()
+        line = "<{0}> {1}".format(e.source.nick, " ".join(e.arguments))
+        self.log(channel, line)
         if channel == self.channel:
             self.on_pubmsg_main(e)
         elif channel == self.control_channel:
