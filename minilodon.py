@@ -71,25 +71,27 @@ class Minilodon(irc.bot.SingleServerIRCBot):
             self.on_pubmsg_main(e)
 
     def on_join(self, c, e):
+        channel = e.target.lower()
         if e.source.nick == self.connection.get_nickname():
-            self.logs[e.target] = self.open_log_file(e.target)
-            self.send_msg("Joined {}".format(e.target), True)
+            self.logs[channel] = self.open_log_file(channel)
+            self.send_msg("Joined {}".format(channel), True)
         else:
             host = e.source.split('!')[1]
             nick = e.source.nick
-            self.log(e.target, "{} [{}] joined {}".format(nick, host, e.target))
-            if e.target != self.channel:
+            self.log(e.target, "{} [{}] joined {}".format(nick, host, channel))
+            if channel != self.channel:
                 return
             self.add_kicker(nick)
 
     def on_part(self, c, e):
+        channel = e.target.lower()
         if e.source.nick == self.connection.get_nickname():
-            self.send_msg("Left {}".format(e.target), True)
-            self.logs[e.target].close()
-            del self.logs[e.target]
+            self.send_msg("Left {}".format(channel), True)
+            self.logs[channel].close()
+            del self.logs[channel]
             return
         self.remove_kicker(e.source.nick)
-        self.log(e.target, "{} left {}".format(e.source.nick, e.target))
+        self.log(channel, "{} left {}".format(e.source.nick, channel))
 
     def on_kick(self, c, e):
         channel = e.target.lower()
