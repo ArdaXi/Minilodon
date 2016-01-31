@@ -177,6 +177,7 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         self.connection.kick(self.channel, nick, reason)
 
     def log(self, channel, msg):
+        channel = channel.lower()
         curtime = datetime.now()
         if not curtime.day == self.day:
             self.reopen_logs()
