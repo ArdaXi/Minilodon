@@ -1,6 +1,6 @@
 import irc.bot
 import time
-from threading import Thread, Event
+from threading import Thread, Event, Timer
 from datetime import datetime
 import json
 import logging
@@ -75,6 +75,8 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         if e.source.nick == self.connection.get_nickname():
             self.logs[channel] = self.open_log_file(channel)
             self.send_msg("Joined {}".format(channel), True)
+            if channel == self.channel:
+                Timer(1.0, self.on_join_main).start()
         else:
             host = e.source.split('!')[1]
             nick = e.source.nick
@@ -82,6 +84,11 @@ class Minilodon(irc.bot.SingleServerIRCBot):
             if channel != self.channel:
                 return
             self.add_kicker(nick)
+
+    def on_join_main(self):
+        users = self.channels[self.channel].users()
+        for user in users:
+            self.add_kicker(user)
 
     def on_part(self, c, e):
         channel = e.target.lower()
@@ -139,9 +146,10 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         return open(filename, 'at', 1)
 
     def add_kicker(self, nick):
-        kicker = Kicker(self.connection, self.channel, nick, self.idletime)
-        kicker.start()
-        self.kickers[nick] = kicker
+        if not nick in self.kickers:
+            kicker = Kicker(self.connection, self.channel, nick, self.idletime)
+            kicker.start()
+            self.kickers[nick] = kicker
 
     def remove_kicker(self, nick):
         if nick in self.kickers:
@@ -264,6 +272,7 @@ class Kicker(Thread):
             self.resetter.wait(self.idletime)
             if not self.resetter.isSet() and not self.canceled:
                 self.connection.kick(self.channel, self.nick, "Idle too long!")
+                self.send_msg("Kicked {} due to inactivity.".format(self.nick), True)
                 self.canceled = True
             else:
                 self.resetter.clear()
