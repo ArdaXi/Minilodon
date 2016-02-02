@@ -101,6 +101,7 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         self.log(channel, "{} left {}".format(e.source.nick, channel))
 
     def on_quit(self, c, e):
+        e.target = "server"
         return self.on_part(c, e)
 
     def on_kick(self, c, e):
