@@ -158,6 +158,8 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         if nick in self.kickers:
             self.kickers[nick].cancel()
             del self.kickers[nick]
+        else:
+            self.send_msg("{} not in kickers.".format(nick), True)
 
     def get_idle_times(self):
         for nick in self.kickers:
