@@ -146,6 +146,8 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         return open(filename, 'at', 1)
 
     def add_kicker(self, nick):
+        if nick == self.connection.get_nickname() or nick == "ChanServ":
+            return
         if not nick in self.kickers:
             kicker = Kicker(self.connection, self.channel, nick, self.idletime)
             kicker.start()
