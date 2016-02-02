@@ -101,8 +101,8 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         self.log(channel, "{} left {}".format(e.source.nick, channel))
 
     def on_quit(self, c, e):
-        e.target = "server"
-        return self.on_part(c, e)
+        self.remove_kicker(e.source.nick)
+        self.log(self.channel, "{} quit".format(e.source.nick))
 
     def on_kick(self, c, e):
         channel = e.target.lower()
