@@ -50,7 +50,7 @@ class Minilodon(irc.bot.SingleServerIRCBot):
 
     def on_pubmsg_main(self, e):
         nick = e.source.nick
-        if not nick in self.kickers:
+        if not nick.lower() in self.kickers:
             self.add_kicker(nick)
         self.kickers[nick.lower()].reset()
         if e.arguments[0].startswith("!"):
@@ -165,10 +165,12 @@ class Minilodon(irc.bot.SingleServerIRCBot):
             yield (self.kickers[nick].nick, self.kickers[nick].time)
 
     def on_nick(self, c, e):
-        if e.source.nick in self.kickers:
-            self.kickers[e.target] = self.kickers[e.source.nick]
-            self.kickers[e.target].changenick(e.target)
-            del self.kickers[e.source.nick]
+        old = e.source.nick
+        new = e.target
+        if old.lower() in self.kickers:
+            self.kickers[new.lower()] = self.kickers[new.lower()]
+            self.kickers[new.lower()].changenick(new)
+            del self.kickers[old.lower()]
 
     def on_privmsg(self, c, e):
         self.send_priv_msg(e.source.nick, self.do_command(e, e.arguments[0][1:]))
