@@ -168,7 +168,7 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         old = e.source.nick
         new = e.target
         if old.lower() in self.kickers:
-            self.kickers[new.lower()] = self.kickers[new.lower()]
+            self.kickers[new.lower()] = self.kickers[old.lower()]
             self.kickers[new.lower()].changenick(new)
             del self.kickers[old.lower()]
 
