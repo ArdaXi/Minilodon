@@ -147,7 +147,8 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         return open(filename, 'at', 1)
 
     def add_kicker(self, nick):
-        if nick == self.connection.get_nickname() or nick == "ChanServ":
+        nick = nick.lower()
+        if nick == self.connection.get_nickname().lower() or nick == "chanserv":
             return
         if not nick in self.kickers:
             kicker = Kicker(self.connection, self.channel, nick, self.idletime)
@@ -155,11 +156,10 @@ class Minilodon(irc.bot.SingleServerIRCBot):
             self.kickers[nick] = kicker
 
     def remove_kicker(self, nick):
+        nick = nick.lower()
         if nick in self.kickers:
             self.kickers[nick].cancel()
             del self.kickers[nick]
-        else:
-            self.send_msg("{} not in kickers.".format(nick), True)
 
     def get_idle_times(self):
         for nick in self.kickers:
