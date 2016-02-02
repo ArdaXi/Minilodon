@@ -52,7 +52,7 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         nick = e.source.nick
         if not nick in self.kickers:
             self.add_kicker(nick)
-        self.kickers[nick].reset()
+        self.kickers[nick.lower()].reset()
         if e.arguments[0].startswith("!"):
             self.send_msg(self.do_command(e, e.arguments[0][1:]))
         msg = " ".join(e.arguments)
