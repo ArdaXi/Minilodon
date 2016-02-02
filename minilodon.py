@@ -162,7 +162,7 @@ class Minilodon(irc.bot.SingleServerIRCBot):
 
     def get_idle_times(self):
         for nick in self.kickers:
-            yield (nick, self.kickers[nick].time)
+            yield (self.kickers[nick].nick, self.kickers[nick].time)
 
     def on_nick(self, c, e):
         if e.source.nick in self.kickers:
