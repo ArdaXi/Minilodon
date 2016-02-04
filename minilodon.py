@@ -150,7 +150,7 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         if nick == self.connection.get_nickname() or nick == "ChanServ":
             return
         if not nick.lower() in self.kickers:
-            kicker = Kicker(self.connection, self.channel, nick, self.idletime)
+            kicker = Kicker(self, self.channel, nick, self.idletime)
             kicker.start()
             self.kickers[nick.lower()] = kicker
 
@@ -261,9 +261,9 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         return decorator
 
 class Kicker(Thread):
-    def __init__(self, connection, channel, nick, idletime):
+    def __init__(self, bot, channel, nick, idletime):
         Thread.__init__(self)
-        self.connection = connection
+        self.bot = bot
         self.channel = channel
         self.nick = nick
         self.idletime = idletime
@@ -277,8 +277,8 @@ class Kicker(Thread):
             self.time = time.time()
             self.resetter.wait(self.idletime)
             if not self.resetter.isSet() and not self.canceled:
-                self.connection.kick(self.channel, self.nick, "Idle too long!")
-                self.send_msg("Kicked {} due to inactivity.".format(self.nick), True)
+                self.bot.connection.kick(self.channel, self.nick, "Idle too long!")
+                self.bot.send_msg("Kicked {} due to inactivity.".format(self.nick), True)
                 self.canceled = True
             else:
                 self.resetter.clear()
