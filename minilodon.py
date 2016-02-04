@@ -193,8 +193,11 @@ class Minilodon(irc.bot.SingleServerIRCBot):
     def kick(self, nick, reason):
         self.connection.kick(self.channel, nick, reason)
 
-    def log(self, channel, msg):
-        channel = channel.lower()
+    def log(self, chan, msg):
+        channel = chan.lower()
+        if channel not in self.logs:
+            self.logger.warning("Message received on channel %s before join: %s". channel, msg)
+            return
         curtime = datetime.now()
         if not curtime.day == self.day:
             self.reopen_logs()
