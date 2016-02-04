@@ -196,7 +196,7 @@ class Minilodon(irc.bot.SingleServerIRCBot):
     def log(self, chan, msg):
         channel = chan.lower()
         if channel not in self.logs:
-            self.logger.warning("Message received on channel %s before join: %s". channel, msg)
+            self.logger.warning("Message received on channel %s before join: %s", channel, msg)
             return
         curtime = datetime.now()
         if not curtime.day == self.day:
