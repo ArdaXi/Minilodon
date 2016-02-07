@@ -212,6 +212,20 @@ class Minilodon(irc.bot.SingleServerIRCBot):
             self.logs[channel] = self.open_log_file(channel)
             oldfile.close()
 
+    def wrap_msg(self, words):
+        line = ''
+        index = 0
+        for i in range(len(words)):
+            newline = line + ' ' + words[i]
+            if len(newline) > 511:
+                index = i
+                break
+            line = newline
+        yield line.strip()
+        if index > 0:
+            for line in self.wrap_msg(words[index:]):
+                yield line
+
     def send_msg(self, msg, control=False):
         if msg is None:
             return
@@ -219,6 +233,8 @@ class Minilodon(irc.bot.SingleServerIRCBot):
             for line in msg:
                 self.send_msg(line, control)
             return
+        if len(msg) > 511:
+            return self.send_msg(self.wrap_msg(msg.split(' ')), control)
         channel = self.control_channel if control else self.channel
         if msg[:3] == '/me':
             return self.send_action(msg[4:], control)
@@ -232,8 +248,10 @@ class Minilodon(irc.bot.SingleServerIRCBot):
             return
         if not isinstance(msg, str):
             for line in msg:
-                self.send_msg(target, line)
+                self.send_priv_msg(target, line)
             return
+        if len(msg) > 511:
+            return self.send_priv_msg(target, self.wrap_msg(msg.split(' ')))
         if msg[:3] == '/me':
             return self.send_priv_action(target, msg[4:])
         self.connection.privmsg(target, msg)
