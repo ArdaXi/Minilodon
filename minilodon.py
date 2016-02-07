@@ -146,6 +146,7 @@ class Minilodon(irc.bot.SingleServerIRCBot):
     def part(self, target):
         channel = target.lower()
         if not channel in self.extrachannels:
+            self.send_msg("Channel {} never joined via !join".format(channel), True)
             return
         self.extrachannels.remove(channel)
         self.connection.part(channel)
