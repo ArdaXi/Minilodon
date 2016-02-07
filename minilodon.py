@@ -262,7 +262,7 @@ class Minilodon(irc.bot.SingleServerIRCBot):
             for line in msg:
                 self.send_msg(line, control)
             return
-        if len(msg) > 511:
+        if len(msg) > 254:
             return self.send_msg(self.wrap_msg(msg.split(' ')), control)
         channel = self.control_channel if control else self.channel
         if msg[:3] == '/me':

@@ -22,11 +22,11 @@ def update(nick, args):
     key = args[2]
     msg = " ".join(args[3:])
     if len(msg) > 254:
-        return "Entry too long, max 254 characters."
+        yield "Warning: Entry too long, message will be wrapped."
     try:
         msg.format(victim="victim", nick="nick")
     except KeyError as e:
-        return "Failed to parse message on {}".format(str(e))
+        yield "Failed to parse message on {}".format(str(e))
     actions = parse_actions("actions.json")
     if category not in actions:
         actions[category] = {}
@@ -35,7 +35,7 @@ def update(nick, args):
         json.dump(actions, f, indent=2, separators=(',', ': '),
                   sort_keys=True)
     load_actions()
-    return "{} added to {}.".format(key, category)
+    yield "{} added to {}.".format(key, category)
 
 @bot.command("updateme", True)
 def updateme(nick, args):
