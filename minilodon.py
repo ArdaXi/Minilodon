@@ -75,8 +75,6 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         if e.source.nick == self.connection.get_nickname():
             self.logs[channel] = self.open_log_file(channel)
             self.send_msg("Joined {}".format(channel), True)
-            if channel == self.channel:
-                Timer(1.0, self.on_join_main).start()
         else:
             host = e.source.split('!')[1]
             nick = e.source.nick
@@ -85,10 +83,13 @@ class Minilodon(irc.bot.SingleServerIRCBot):
                 return
             self.add_kicker(nick)
 
-    def on_join_main(self):
-        users = self.channels[self.channel].users()
-        for user in users:
-            self.add_kicker(user)
+    def on_namreply(self, c, e):
+        channel = e.arguments[1].lower()
+        users = e.arguments[2].strip().split(' ')
+        if channel == self.channel:
+            for user in users:
+                user = user.strip('@%+')
+                self.add_kicker(user)
 
     def on_part(self, c, e):
         channel = e.target.lower()
