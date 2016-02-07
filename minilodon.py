@@ -103,7 +103,6 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         if channel == self.channel:
             users = [user.strip('@%+') for user in e.arguments[2].strip().split(' ')
                       if user.strip('@%+').lower() not in ['chanserv', c.get_nickname().lower()]]
-            print(users)
             if len(users) == 1:
                 self.alone = users[0]
             else:
