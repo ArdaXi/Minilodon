@@ -24,6 +24,7 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         self.kickers = {}
         self.commands = {}
         self.control_commands = {}
+        self.alone = ''
         self.logger = logging.getLogger(__name__)
 
     def on_nicknameinuse(self, c, e):
@@ -87,7 +88,15 @@ class Minilodon(irc.bot.SingleServerIRCBot):
             self.log(e.target, "{} [{}] joined {}".format(nick, host, channel))
             if channel != self.channel:
                 return
-            self.add_kicker(nick)
+            if self.alone:
+                self.add_kicker(self.alone)
+                self.alone = ''
+            users = [user for user in self.channels[self.channel].users()
+                      if user.lower() not in ['chanserv', c.get_nickname().lower()]]
+            if len(users) == 1:
+                self.alone = users[0]
+            else:
+                self.add_kicker(nick)
 
     def on_namreply(self, c, e):
         channel = e.arguments[1].lower()
@@ -110,6 +119,13 @@ class Minilodon(irc.bot.SingleServerIRCBot):
             self.logs[channel].close()
             del self.logs[channel]
             return
+        if self.alone:
+            self.alone = ''
+        users = [user for user in self.channels[self.channel].users()
+                  if user.lower() not in ['chanserv', c.get_nickname().lower()]]
+        if len(users) == 1:
+            self.alone = users[0]
+            self.remove_kicker(self.alone)
         self.remove_kicker(e.source.nick)
         self.log(channel, "{} left {}".format(e.source.nick, channel))
 
