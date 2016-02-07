@@ -217,7 +217,7 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         index = 0
         for i in range(len(words)):
             newline = line + ' ' + words[i]
-            if len(newline) > 511:
+            if len(newline) > 254:
                 index = i
                 break
             line = newline
