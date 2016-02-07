@@ -100,11 +100,15 @@ class Minilodon(irc.bot.SingleServerIRCBot):
 
     def on_namreply(self, c, e):
         channel = e.arguments[1].lower()
-        users = e.arguments[2].strip().split(' ')
         if channel == self.channel:
-            for user in users:
-                user = user.strip('@%+')
-                self.add_kicker(user)
+            users = [user.strip('@%+') for user in e.arguments[2].strip().split(' ')
+                      if user.strip('@%+').lower() not in ['chanserv', c.get_nickname().lower()]]
+            print(users)
+            if len(users) == 1:
+                self.alone = users[0]
+            else:
+                for user in users:
+                    self.add_kicker(user)
 
     def on_bannedfromchan(self, c, e):
         channel = e.arguments[0]
