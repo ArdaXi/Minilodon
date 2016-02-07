@@ -97,6 +97,12 @@ class Minilodon(irc.bot.SingleServerIRCBot):
                 user = user.strip('@%+')
                 self.add_kicker(user)
 
+    def on_bannedfromchan(self, c, e):
+        channel = e.arguments[0]
+        self.send_msg("Failed to join channel {}".format(channel), True)
+        if channel in self.extrachannels:
+            self.extrachannels.remove(channel)
+
     def on_part(self, c, e):
         channel = e.target.lower()
         if e.source.nick == self.connection.get_nickname():
