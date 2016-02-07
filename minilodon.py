@@ -33,11 +33,17 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         raise Exception("Disconnected by {} ({})".format(e.source, " ".join(e.arguments)))
 
     def on_welcome(self, c, e):
+        c.mode(c.get_nickname(), "-g")
         if self.password:
             self.send_priv_msg('NickServ', 'IDENTIFY ' + self.password)
-        c.mode(c.get_nickname(), "-g")
-        c.join(self.control_channel)
-        c.join(self.channel)
+        else:
+            c.join(self.control_channel)
+            c.join(self.channel)
+
+    def on_privnotice(self, c, e):
+        if e.source.nick == "NickServ" and e.arguments[0] == "Password accepted - you are now recognized.":
+            c.join(self.control_channel)
+            c.join(self.channel)
 
     def on_pubmsg(self, c, e):
         channel = e.target.lower()
