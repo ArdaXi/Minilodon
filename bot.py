@@ -21,6 +21,8 @@ def update(nick, args):
     category = args[1]
     key = args[2]
     msg = " ".join(args[3:])
+    if len(msg) > 254:
+        return "Entry too long, max 254 characters."
     try:
         msg.format(victim="victim", nick="nick")
     except KeyError as e:
