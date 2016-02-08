@@ -5,6 +5,7 @@ from datetime import datetime
 import json
 import logging
 import os
+import util
 
 class Minilodon(irc.bot.SingleServerIRCBot):
     def __init__(self, config):
@@ -80,7 +81,7 @@ class Minilodon(irc.bot.SingleServerIRCBot):
     def on_join(self, c, e):
         channel = e.target.lower()
         if e.source.nick == self.connection.get_nickname():
-            self.logs[channel] = self.open_log_file(channel)
+            self.logs[channel] = util.open_log_file(channel)
             self.send_msg("Joined {}".format(channel), True)
         else:
             host = e.source.split('!')[1]
@@ -174,15 +175,6 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         self.extrachannels.remove(channel)
         self.connection.part(channel)
 
-    def open_log_file(self, channel):
-        if not os.path.exists(channel):
-            os.mkdir(channel)
-        curdate = datetime.now()
-        datestr = curdate.strftime("%y-%m-%d")
-        self.day = curdate.day
-        filename = "{}/{}-{}.log".format(channel, datestr, channel)
-        return open(filename, 'at', 1)
-
     def add_kicker(self, nick):
         if nick == self.connection.get_nickname() or nick == "ChanServ":
             return
@@ -235,32 +227,19 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         if channel not in self.logs:
             self.logger.warning("Message received on channel %s before join: %s", channel, msg)
             return
+        logfile = self.logs[channel]
         curtime = datetime.now()
-        if not curtime.day == self.day:
+        if not curtime.day == logfile.day:
             self.reopen_logs()
         timestr = curtime.strftime("%d-%m-%y %H:%M:%S")
         line = "{0} {1}\n".format(timestr, msg)
-        self.logs[channel].write(line)
+        logfile.write(line)
 
     def reopen_logs(self):
         for channel in self.logs:
             oldfile = self.logs[channel]
-            self.logs[channel] = self.open_log_file(channel)
+            self.logs[channel] = util.open_log_file(channel)
             oldfile.close()
-
-    def wrap_msg(self, words):
-        line = ''
-        index = 0
-        for i in range(len(words)):
-            newline = line + ' ' + words[i]
-            if len(newline) > 254:
-                index = i
-                break
-            line = newline
-        yield line.strip()
-        if index > 0:
-            for line in self.wrap_msg(words[index:]):
-                yield line
 
     def send_msg(self, msg, control=False):
         if msg is None:
@@ -270,7 +249,7 @@ class Minilodon(irc.bot.SingleServerIRCBot):
                 self.send_msg(line, control)
             return
         if len(msg) > 254:
-            return self.send_msg(self.wrap_msg(msg.split(' ')), control)
+            return self.send_msg(util.wrap_msg(msg), control)
         channel = self.control_channel if control else self.channel
         if msg[:3] == '/me':
             return self.send_action(msg[4:], control)
@@ -287,7 +266,7 @@ class Minilodon(irc.bot.SingleServerIRCBot):
                 self.send_priv_msg(target, line)
             return
         if len(msg) > 511:
-            return self.send_priv_msg(target, self.wrap_msg(msg.split(' ')))
+            return self.send_priv_msg(target, util.wrap_msg(msg))
         if msg[:3] == '/me':
             return self.send_priv_action(target, msg[4:])
         self.connection.privmsg(target, msg)
