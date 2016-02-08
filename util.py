@@ -7,9 +7,9 @@ def open_log_file(channel):
     curdate = datetime.now()
     datestr = curdate.strftime('%y-%m-%d')
     filename = '{}/{}-{}.log'.format(channel, datestr, channel)
-    fp = open(filename, 'at', 1)
-    fp.day = curdate.day
-    return fp
+    logfile = open(filename, 'at', 1)
+    logfile.day = curdate.day
+    return logfile
 
 def wrap_msg(words):
     if isinstance(words, str):

@@ -25,14 +25,14 @@ def update(nick, args):
         yield "Warning: Entry too long, message will be wrapped."
     try:
         msg.format(victim="victim", nick="nick")
-    except KeyError as e:
-        yield "Failed to parse message on {}".format(str(e))
+    except KeyError as error:
+        yield "Failed to parse message on {}".format(str(error))
     actions = parse_actions("actions.json")
     if category not in actions:
         actions[category] = {}
     actions[category][key] = msg
-    with open("actions.json", "w") as f:
-        json.dump(actions, f, indent=2, separators=(',', ': '),
+    with open("actions.json", "w") as actions_file:
+        json.dump(actions, actions_file, indent=2, separators=(',', ': '),
                   sort_keys=True)
     load_actions()
     yield "{} added to {}.".format(key, category)
@@ -87,8 +87,9 @@ def _idle_time_to_string(data):
     delta = curtime - idletime
     hours, remainder = divmod(delta, 3600)
     minutes, seconds = divmod(remainder, 60)
-    return "{} is {:d} uur, {:d} minuten en {:d} seconden idle.".format(nick,
-      int(round(hours)), int(round(minutes)), int(round(seconds)))
+    return ("{} is {:d} uur, {:d} minuten en {:d} seconden idle."
+            .format(nick, int(round(hours)), int(round(minutes)),
+                    int(round(seconds))))
 
 @bot.command("idle", True)
 def idle(nick, args):
@@ -150,8 +151,8 @@ def video(msg):
                                   views)
 
 def parse_actions(filename):
-    with open(filename) as f:
-        return json.load(f)
+    with open(filename) as actions_file:
+        return json.load(actions_file)
 
 def load_actions():
     actions = parse_actions("actions.json")
@@ -166,7 +167,8 @@ def load_actions():
                 else:
                     victim = nick
                 if key in actions[category]:
-                    return actions[category][key].format(victim=victim, nick=nick)
+                    return actions[category][key].format(victim=victim,
+                                                         nick=nick)
                 elif key not in bot.commands:
                     return "Didn't find {} in {}.".format(key, category)
             bot.commands[category] = lookup

@@ -1,10 +1,7 @@
-import irc.bot
-import time
-from threading import Thread, Event, Timer
 from datetime import datetime
 import json
 import logging
-import os
+import irc.bot
 import util
 from kicker import Kicker
 
@@ -34,7 +31,8 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         c.nick(c.get_nickname() + "_")
 
     def on_disconnect(self, c, e):
-        raise Exception("Disconnected by {} ({})".format(e.source, " ".join(e.arguments)))
+        raise Exception("Disconnected by {} ({})"
+                        .format(e.source, " ".join(e.arguments)))
 
     def on_welcome(self, c, e):
         c.mode(c.get_nickname(), "-g")
@@ -45,7 +43,8 @@ class Minilodon(irc.bot.SingleServerIRCBot):
             c.join(self.channel)
 
     def on_privnotice(self, c, e):
-        if e.source.nick == "NickServ" and e.arguments[0] == "Password accepted - you are now recognized.":
+        if (e.source.nick == "NickServ" and e.arguments[0] ==
+                "Password accepted - you are now recognized."):
             c.join(self.control_channel)
             c.join(self.channel)
 
@@ -72,12 +71,13 @@ class Minilodon(irc.bot.SingleServerIRCBot):
                 self.send_msg(result)
 
     def on_pubmsg_control(self, e):
-       if e.arguments[0].startswith("!"):
-           self.send_msg(self.do_control_command(e, e.arguments[0][1:]), True)
-           self.send_msg(self.do_command(e, e.arguments[0][1:]), True)
+        if e.arguments[0].startswith("!"):
+            self.send_msg(self.do_control_command(e, e.arguments[0][1:]), True)
+            self.send_msg(self.do_command(e, e.arguments[0][1:]), True)
 
     def on_action(self, c, e):
-        self.log(e.target, "{} {}".format(e.source.nick, " ".join(e.arguments)))
+        self.log(e.target, "{} {}".format(e.source.nick,
+                                          " ".join(e.arguments)))
         if e.target.lower() == self.channel:
             e.arguments = ["/me"] + e.arguments
             self.on_pubmsg_main(e)
@@ -97,7 +97,8 @@ class Minilodon(irc.bot.SingleServerIRCBot):
                 self.add_kicker(self.alone)
                 self.alone = ''
             users = [user for user in self.channels[self.channel].users()
-                      if user.lower() not in ['chanserv', c.get_nickname().lower()]]
+                     if user.lower() not in ['chanserv',
+                                             c.get_nickname().lower()]]
             if len(users) == 1:
                 self.alone = users[0]
             else:
@@ -106,8 +107,11 @@ class Minilodon(irc.bot.SingleServerIRCBot):
     def on_namreply(self, c, e):
         channel = e.arguments[1].lower()
         if channel == self.channel:
-            users = [user.strip('@%+') for user in e.arguments[2].strip().split(' ')
-                      if user.strip('@%+').lower() not in ['chanserv', c.get_nickname().lower()]]
+            users = [user.strip('@%+') for user in e.arguments[2].strip()
+                                                                 .split(' ')
+                     if user.strip('@%+').lower() not in ['chanserv',
+                                                          c.get_nickname()
+                                                           .lower()]]
             if len(users) == 1:
                 self.alone = users[0]
             else:
@@ -134,7 +138,8 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         if self.alone:
             self.alone = ''
         users = [user for user in self.channels[self.channel].users()
-                    if user.lower() not in ['chanserv', c.get_nickname().lower()]]
+                 if user.lower() not in ['chanserv',
+                                         c.get_nickname().lower()]]
         if len(users) == 1:
             self.alone = users[0]
             self.remove_kicker(self.alone)
@@ -151,16 +156,19 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         reason = " ".join(e.arguments[1:])
         if kickee == self.connection.get_nickname():
             if channel == self.channel or channel == self.control_channel:
-                raise Exception("Kicked from {} by {} ({})".format(channel, kicker, reason))
+                raise Exception("Kicked from {} by {} ({})"
+                                .format(channel, kicker, reason))
             else:
-                self.send_msg("Kicked from {} by {} ({})".format(channel, kicker, reason), True)
+                self.send_msg("Kicked from {} by {} ({})"
+                              .format(channel, kicker, reason), True)
                 self.logs[e.target].close()
                 del self.logs[e.target]
                 self.extrachannels.remove(channel)
         else:
             self.on_leave(kickee)
-            self.log(channel, "{} was kicked from {} by {} ({})".format(kickee, channel,
-                                                                        kicker, reason))
+            self.log(channel,
+                     "{} was kicked from {} by {} ({})".format(kickee, channel,
+                                                               kicker, reason))
 
     def join(self, target):
         channel = target.lower()
@@ -174,7 +182,8 @@ class Minilodon(irc.bot.SingleServerIRCBot):
     def part(self, target):
         channel = target.lower()
         if not channel in self.extrachannels:
-            self.send_msg("Channel {} never joined via !join".format(channel), True)
+            self.send_msg("Channel {} never joined via !join"
+                          .format(channel), True)
             return
         self.extrachannels.remove(channel)
         self.connection.part(channel)
@@ -206,18 +215,17 @@ class Minilodon(irc.bot.SingleServerIRCBot):
             del self.kickers[old.lower()]
 
     def on_privmsg(self, c, e):
-        self.send_priv_msg(e.source.nick, self.do_command(e, e.arguments[0][1:]))
+        command = e.arguments[0][1:]
+        result = self.do_command(e, command)
+        self.send_priv_msg(e.source.nick, result)
 
     def do_command(self, e, cmd):
-        channel = e.target
         nick = e.source.nick
-        c = self.connection
         args = cmd.split(" ")
         if args[0] in self.commands:
             return self.commands[args[0]](nick, args)
 
     def do_control_command(self, e, cmd):
-        c = self.connection
         args = cmd.split(" ")
         nick = e.source.nick
         if args[0] in self.control_commands:
@@ -229,7 +237,8 @@ class Minilodon(irc.bot.SingleServerIRCBot):
     def log(self, chan, msg):
         channel = chan.lower()
         if channel not in self.logs:
-            self.logger.warning("Message received on channel %s before join: %s", channel, msg)
+            self.logger.warning(
+                "Message received on channel %s before join: %s", channel, msg)
             return
         logfile = self.logs[channel]
         curtime = datetime.now()

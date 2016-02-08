@@ -18,8 +18,10 @@ class Kicker(Thread):
             self.time = time.time()
             self.resetter.wait(self.idletime)
             if not self.resetter.isSet() and not self.canceled:
-                self.bot.connection.kick(self.channel, self.nick, "Idle too long!")
-                self.bot.send_msg("Kicked {} due to inactivity.".format(self.nick), True)
+                self.bot.connection.kick(self.channel, self.nick,
+                                         "Idle too long!")
+                self.bot.send_msg("Kicked {} due to inactivity."
+                                  .format(self.nick), True)
                 self.canceled = True
             else:
                 self.resetter.clear()
