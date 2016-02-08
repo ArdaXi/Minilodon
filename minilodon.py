@@ -122,18 +122,21 @@ class Minilodon(irc.bot.SingleServerIRCBot):
             self.logs[channel].close()
             del self.logs[channel]
             return
+        self.on_leave(e.source.nick)
+        self.log(channel, "{} left {}".format(e.source.nick, channel))
+
+    def on_leave(self, nick):
         if self.alone:
             self.alone = ''
         users = [user for user in self.channels[self.channel].users()
-                  if user.lower() not in ['chanserv', c.get_nickname().lower()]]
+                    if user.lower() not in ['chanserv', c.get_nickname().lower()]]
         if len(users) == 1:
             self.alone = users[0]
             self.remove_kicker(self.alone)
-        self.remove_kicker(e.source.nick)
-        self.log(channel, "{} left {}".format(e.source.nick, channel))
+        self.remove_kicker(nick)
 
     def on_quit(self, c, e):
-        self.remove_kicker(e.source.nick)
+        self.on_leave(e.source.nick)
         self.log(self.channel, "{} quit".format(e.source.nick))
 
     def on_kick(self, c, e):
@@ -141,9 +144,6 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         kicker = e.source.nick
         kickee = e.arguments[0]
         reason = " ".join(e.arguments[1:])
-        self.remove_kicker(kickee)
-        self.log(channel, "{} was kicked from {} by {} ({})".format(kickee, channel,
-                                                                    kicker, reason))
         if kickee == self.connection.get_nickname():
             if channel == self.channel or channel == self.control_channel:
                 raise Exception("Kicked from {} by {} ({})".format(channel, kicker, reason))
@@ -152,6 +152,10 @@ class Minilodon(irc.bot.SingleServerIRCBot):
                 self.logs[e.target].close()
                 del self.logs[e.target]
                 self.extrachannels.remove(channel)
+        else:
+            self.on_leave(kickee)
+            self.log(channel, "{} was kicked from {} by {} ({})".format(kickee, channel,
+                                                                        kicker, reason))
 
     def join(self, target):
         channel = target.lower()
