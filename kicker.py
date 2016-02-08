@@ -1,4 +1,5 @@
 from threading import Thread, Event
+import time
 
 class Kicker(Thread):
     def __init__(self, bot, channel, nick, idletime):

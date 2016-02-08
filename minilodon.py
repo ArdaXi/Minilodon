@@ -21,6 +21,7 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         self.control_channel = config['controlchannel'].lower()
         self.password = config['password'] if 'password' in config else None
         self.idletime = config['idletime'] if 'idletime' in config else 3600.0
+        self.on_message = []
         self.extrachannels = []
         self.logs = {}
         self.kickers = {}
@@ -66,7 +67,9 @@ class Minilodon(irc.bot.SingleServerIRCBot):
             self.send_msg(self.do_command(e, e.arguments[0][1:]))
         msg = " ".join(e.arguments)
         if self.on_message:
-            self.send_msg(self.on_message(nick, msg))
+            for f in self.on_message:
+                result = f(nick, msg)
+                self.send_msg(result)
 
     def on_pubmsg_control(self, e):
        if e.arguments[0].startswith("!"):
@@ -285,7 +288,7 @@ class Minilodon(irc.bot.SingleServerIRCBot):
 
     def message(self):
         def decorator(f):
-            self.on_message = f
+            self.on_message.append(f)
             return f
         return decorator
 
