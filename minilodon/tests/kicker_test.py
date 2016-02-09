@@ -4,8 +4,8 @@ from threading import Event
 
 import irc
 
-from ..kicker import Kicker
-from ..minilodon import Minilodon
+from minilodon.kicker import Kicker
+from minilodon.minilodon import Minilodon
 
 class KickerTest(unittest.TestCase):
     def setUp(self):
