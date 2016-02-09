@@ -1,11 +1,13 @@
-from minilodon import Minilodon
-import json
 from urllib import parse
-from youtube_dl import YoutubeDL
-from youtube_dl.utils import DownloadError
+from threading import Timer
+import json
 import logging
 import time
-from threading import Timer
+
+from youtube_dl import YoutubeDL
+from youtube_dl.utils import DownloadError
+
+from minilodon.minilodon import Minilodon
 
 bot = Minilodon("config.json")
 logger = logging.getLogger(__name__)
@@ -174,10 +176,13 @@ def load_actions():
             bot.commands[category] = lookup
         _(category)
 
-if __name__ == "__main__":
+def main():
     load_actions()
     try:
         bot.start()
     except KeyboardInterrupt:
         bot.die()
         raise
+
+if __name__ == "__main__":
+    main()

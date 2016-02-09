@@ -2,8 +2,9 @@ from datetime import datetime
 import json
 import logging
 import irc.bot
-import util
-from kicker import Kicker
+
+from minilodon import util
+from minilodon.kicker import Kicker
 
 class Minilodon(irc.bot.SingleServerIRCBot):
     def __init__(self, config):

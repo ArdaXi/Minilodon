@@ -1,2 +1,4 @@
 irc
 youtube_dl
+nose
+coverage
