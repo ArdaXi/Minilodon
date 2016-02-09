@@ -1,8 +1,9 @@
 import itertools
 import unittest
+import time
 from unittest.mock import Mock, patch
 
-import irc
+from freezegun import freeze_time
 
 def _command(name, control=False):
     return lambda f: f
@@ -107,3 +108,70 @@ class SayTest(unittest.TestCase):
         result = bot.say('nick', ['say', 'hello', 'world'])
         bot.bot.send_msg.assert_called_once_with('hello world')
         self.assertEqual(result, None)
+
+class JoinTest(unittest.TestCase):
+    def test_no_args(self):
+        result = bot.join('nick', ['join'])
+        self.assertEqual(result[:6], 'Usage:')
+
+    def test_join(self):
+        result = bot.join('nick', ['join', '#test'])
+        bot.bot.join.assert_called_once_with('#test')
+        self.assertEqual(result, None)
+
+    def test_part_no_args(self):
+        result = bot.part('nick', ['part'])
+        self.assertEqual(result[:6], 'Usage:')
+
+    def test_part(self):
+        result = bot.part('nick', ['part', '#test'])
+        bot.bot.part.assert_called_once_with('#test')
+        self.assertEqual(result, None)
+
+class IdleTest(unittest.TestCase):
+    def setUp(self):
+        bot.bot.alone = False
+
+    def test_idle_alone(self):
+        bot.bot.alone = 'victim'
+        result = bot.idle('nick', ['idle'])
+        self.assertEqual(result, 'victim is alone in the room.')
+        bot.bot.alone = False
+
+    @freeze_time('01-01-01 12:00:00')
+    def test_idle(self):
+        data = 'nick', time.time() - 3661
+        bot.bot.get_idle_times.return_value = [data]
+        result = list(bot.idle('nick', []))
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0], 'nick is 1 uur, 1 minuten en 1 seconden idle.')
+        bot.bot.get_idle_times.reset_mock()
+
+class SpyTest(unittest.TestCase):
+    def test_stop_spy(self):
+        bot.spy_function = 'f'
+        bot.spy_timer = 't'
+        result = bot.stop_spy()
+        self.assertEqual(bot.spy_function, None)
+        self.assertEqual(bot.spy_timer, None)
+        self.assertEqual(result, 'Spy functie gestopt.')
+
+    @patch('threading.Timer')
+    def test_spy(self, _timer):
+        bot.bot.channel = '#test'
+        bot.spy_function = None
+        bot.spy_timer = None
+        result = bot.spy('nick', ['spy'])
+        bot.spy_function('victim', 'Hello World!')
+        bot.bot.send_msg.assert_called_with('<victim> Hello World!', True)
+        self.assertEqual(result, 'Room #test wordt 15 minuten bespioneerd.')
+        bot.spy_function = None
+        bot.spy_timer = None
+
+    @patch('minilodon.bot.stop_spy')
+    def toggle_spy(self, _stop_spy):
+        bot.spy_function = Mock()
+        bot.spy_timer = Mock()
+        bot.spy('nick', ['spy'])
+        bot.spy_timer.cancel.assert_called_once_with()
+        _stop_spy.assert_called_once_with()
