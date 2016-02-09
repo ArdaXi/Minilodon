@@ -169,9 +169,28 @@ class SpyTest(unittest.TestCase):
         bot.spy_timer = None
 
     @patch('minilodon.bot.stop_spy')
-    def toggle_spy(self, _stop_spy):
+    def test_toggle_spy(self, _stop_spy):
         bot.spy_function = Mock()
         bot.spy_timer = Mock()
         bot.spy('nick', ['spy'])
         bot.spy_timer.cancel.assert_called_once_with()
         _stop_spy.assert_called_once_with()
+
+class ListTest(unittest.TestCase):
+    def test_no_args(self):
+        result = bot.list_all('nick', ['list'])
+        self.assertEqual(result[:6], 'Usage:')
+
+    @patch('minilodon.bot.parse_actions')
+    def test_no_category(self, _parse_actions):
+        _parse_actions.return_value = {}
+        result = bot.list_all('nick', ['list', 'category'])
+        self.assertEqual(result, 'category niet gevonden.')
+
+    @patch('minilodon.bot.parse_actions')
+    def test_list(self, _parse_actions):
+        _parse_actions.return_value = {'category': {'key': 'value'}}
+        result = bot.list_all('nick', ['list', 'category'])
+        bot.bot.send_priv_msg.assert_called_with('nick',
+                                                 'Alle category: key')
+        self.assertEqual(result, 'Zie prive voor een lijst van alle opties.')
