@@ -42,3 +42,13 @@ class KickerTest(unittest.TestCase):
         self.kicker.run()
         assert(not self.bot.connection.kick.called)
         assert(self.resetter.clear.called)
+
+    def test_reset(self):
+        self.kicker.reset()
+        self.assertTrue(self.resetter.set.called)
+
+    def test_changenick(self):
+        self.kicker.changenick('newnick')
+        self.assertTrue(self.resetter.set.called)
+        self.assertEqual(self.kicker.nick, 'newnick')
+        self.kicker.changenick('nick')
