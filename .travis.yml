@@ -2,6 +2,5 @@ language: python
 python:
   - "3.4"
 sudo: false # faster
-install:
-  - pip install -r requirements.txt
+cache: pip
 script: nosetests
