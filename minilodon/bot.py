@@ -19,7 +19,8 @@ spy_timer = None
 @bot.command("update", True)
 def update(nick, args):
     if len(args) < 4:
-        return "Usage: !update <category> <key> <msg>"
+        yield "Usage: !update <category> <key> <msg>"
+        return
     category = args[1]
     key = args[2]
     msg = " ".join(args[3:])
@@ -29,6 +30,7 @@ def update(nick, args):
         msg.format(victim="victim", nick="nick")
     except KeyError as error:
         yield "Failed to parse message on {}".format(str(error))
+        return
     actions = parse_actions("actions.json")
     if category not in actions:
         actions[category] = {}
