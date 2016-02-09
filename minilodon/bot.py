@@ -185,6 +185,3 @@ def main():
     except KeyboardInterrupt:
         bot.die()
         raise
-
-if __name__ == "__main__":
-    main()

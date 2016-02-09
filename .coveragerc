@@ -2,3 +2,6 @@
 omit =
     */tests/*
     */__init__.py
+
+exclude_lines=
+    def main()

@@ -12,11 +12,15 @@ def _message():
     return lambda f: f
 
 mockMinilodon = Mock(command=_command, message=_message)
+mockYDL = Mock()
 
 patcher = patch('minilodon.minilodon.Minilodon', Mock(return_value=mockMinilodon))
+patcher2 = patch('youtube_dl.YoutubeDL', Mock(return_value=mockYDL))
 patcher.start()
+patcher2.start()
 import minilodon.bot as bot
 patcher.stop()
+patcher2.stop()
 
 class UpdateTest(unittest.TestCase):
     def test_no_args(self):
@@ -194,3 +198,26 @@ class ListTest(unittest.TestCase):
         bot.bot.send_priv_msg.assert_called_with('nick',
                                                  'Alle category: key')
         self.assertEqual(result, 'Zie prive voor een lijst van alle opties.')
+
+class VideoTest(unittest.TestCase):
+    def test_error(self):
+        mockYDL.extract_info.side_effect = bot.DownloadError('')
+        result = bot.video('url')
+        self.assertEqual(result, None)
+        mockYDL.extract_info.side_effect = None
+
+    def test_no_views(self):
+        mockYDL.extract_info.return_value = {'extractor_key': 'extractor',
+                                             'title': 'title'}
+        result = bot.video('url')
+        self.assertEqual(result, '[extractor] title ')
+        mockYDL.extract_info.return_value = None
+
+    def test_no_views(self):
+        mockYDL.extract_info.return_value = {'extractor_key': 'extractor',
+                                             'title': 'title',
+                                             'view_count': 1000}
+        result = bot.video('url')
+        self.assertEqual(result, '[extractor] title | 1,000 views')
+        mockYDL.extract_info.return_value = None
+
