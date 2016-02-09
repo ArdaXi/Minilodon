@@ -4,7 +4,20 @@ from unittest.mock import Mock, patch
 
 import irc
 
+class mockMinilodon():
+    def __init__(self, config):
+        pass
+
+    def command(self, name, control=False):
+        return lambda f: f
+
+    def message(self):
+        return lambda f: f
+
+patcher = patch('minilodon.minilodon.Minilodon', mockMinilodon)
+patcher.start()
 import minilodon.bot as bot
+patcher.stop()
 
 class UpdateTest(unittest.TestCase):
     def test_no_args(self):
