@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/ArdaXi/Minilodon.svg?branch=master)](https://travis-ci.org/ArdaXi/Minilodon)
 # Minilodon
 
 This is a simple chatbot that kicks anyone who hasn't spoken in over an hour
