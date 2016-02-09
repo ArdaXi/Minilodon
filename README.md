@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/ArdaXi/Minilodon.svg?branch=master)](https://travis-ci.org/ArdaXi/Minilodon)
+[![Build Status](https://travis-ci.org/ArdaXi/Minilodon.svg?branch=master)](https://travis-ci.org/ArdaXi/Minilodon) [![Coverage Status](https://coveralls.io/repos/github/ArdaXi/Minilodon/badge.svg?branch=master)](https://coveralls.io/github/ArdaXi/Minilodon?branch=master)
 # Minilodon
 
 This is a simple chatbot that kicks anyone who hasn't spoken in over an hour
