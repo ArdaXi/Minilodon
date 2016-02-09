@@ -7,4 +7,6 @@ cache:
     - $HOME/.cache/pip
 install:
   - pip install -r requirements.txt -r dev-requirements.txt
-script: nosetests
+script: nosetests --with-coverage --cover-package=minilodon
+after_success:
+  coveralls
