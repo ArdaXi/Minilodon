@@ -1,9 +1,10 @@
 import unittest
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, MagicMock, patch
 
 from irc.client import Event, NickMask
 
 from minilodon.minilodon import Minilodon
+from minilodon.kicker import Kicker
 
 CONFIG = {
     'server': 'server',
@@ -171,3 +172,37 @@ class MinilodonTest(unittest.TestCase):
         self.bot.part('#target')
         self.assertEqual(self.bot.extrachannels, [])
         self.connection.part.assert_called_once_with('#target')
+
+    @patch('minilodon.kicker.Kicker')
+    def test_add_kicker_self(self, _kicker):
+        self.bot.add_kicker('nick')
+        self.assertFalse(_kicker.called)
+
+    @patch('minilodon.kicker.Kicker')
+    def test_add_kicker_existing(self, _kicker):
+        self.bot.kickers = {'victim': 'sentinel'}
+        self.bot.add_kicker('victim')
+        self.assertFalse(_kicker.called)
+
+    def test_get_idle_times(self):
+        kicker = Mock(nick='victim', time=1)
+        self.bot.kickers = {'victim': kicker}
+        result = list(self.bot.get_idle_times())
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0], ('victim', 1))
+
+    def test_nick(self):
+        kicker = Mock()
+        self.bot.kickers = {'nick': kicker}
+        self.bot.on_nick(self.connection, self.event)
+        kicker.changenick.assert_called_once_with('target')
+        self.assertEqual(self.bot.kickers, {'target': kicker})
+
+    def test_privmsg(self):
+        self.event.arguments = ['!command', 'arg']
+        self.bot.do_command = Mock()
+        self.bot.do_command.return_value = 'result'
+        self.bot.send_priv_msg = Mock()
+        self.bot.on_privmsg(self.connection, self.event)
+        self.bot.do_command.assert_called_once_with(self.event, 'command')
+        self.bot.send_priv_msg.assert_called_once_with('nick', 'result')
