@@ -141,7 +141,7 @@ class Minilodon(irc.bot.SingleServerIRCBot):
             self.alone = ''
         users = [user for user in self.channels[self.channel].users()
                  if user.lower() not in ['chanserv',
-                                         c.get_nickname().lower()]]
+                                         self.connection.get_nickname().lower()]]
         if len(users) == 1:
             self.alone = users[0]
             self.remove_kicker(self.alone)

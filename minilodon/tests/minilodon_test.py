@@ -121,6 +121,59 @@ class MinilodonTest(unittest.TestCase):
         self.bot.log.assert_called_once_with('#channel', 'nick arg1 arg2')
         self.bot.on_pubmsg_main.assert_called_once_with(self.event)
 
+    @patch('minilodon.util.open_log_file')
+    def test_join_self(self, _open):
+        self.bot.logs = {}
+        _open.return_value = 'sentinel'
+        self.bot.send_msg = Mock()
+        self.bot.on_join(self.connection, self.event)
+        self.assertEqual(self.bot.logs['target'], 'sentinel')
+        self.bot.send_msg.assert_called_once_with('Joined target', True)
+
+    def test_join_unalone(self):
+        self.bot.alone = 'user1'
+        mask = NickMask.from_params('user2', 'user', 'host')
+        self.event.source = mask
+        self.event.target = '#channel'
+        self.bot.log = Mock()
+        self.bot.add_kicker = Mock()
+        channel = Mock()
+        channel.users = Mock(return_value=['user1', 'user2'])
+        self.bot.channels = {'#channel': channel}
+        self.bot.on_join(self.connection, self.event)
+        self.bot.log.assert_called_once_with('#channel', 'user2 [user@host] joined #channel')
+        self.bot.add_kicker.assert_any_call('user1')
+        self.bot.add_kicker.assert_any_call('user2')
+        self.assertEqual(self.bot.alone, '')
+
+    def test_join_alone(self):
+        self.bot.alone = None
+        mask = NickMask.from_params('user1', 'user', 'host')
+        self.event.source = mask
+        self.event.target = '#channel'
+        self.bot.log = Mock()
+        self.bot.add_kicker = Mock()
+        channel = Mock()
+        channel.users = Mock(return_value=['user1'])
+        self.bot.channels = {'#channel': channel}
+        self.bot.on_join(self.connection, self.event)
+        self.bot.log.assert_called_once_with('#channel', 'user1 [user@host] joined #channel')
+        self.assertEqual(self.bot.alone, 'user1')
+        self.assertFalse(self.bot.add_kicker.called)
+
+    def test_namreply_alone(self):
+        self.bot.alone = None
+        self.event.arguments = ['', '#channel', ' @chanserv user1']
+        self.bot.on_namreply(self.connection, self.event)
+        self.assertEqual(self.bot.alone, 'user1')
+
+    def test_namreply(self):
+        self.event.arguments = ['', '#channel', ' @chanserv user1 user2']
+        self.bot.add_kicker = Mock()
+        self.bot.on_namreply(self.connection, self.event)
+        self.bot.add_kicker.assert_any_call('user1')
+        self.bot.add_kicker.assert_any_call('user2')
+
     def test_banned(self):
         self.bot.extrachannels = ['arg1']
         self.bot.send_msg = Mock()
@@ -145,6 +198,17 @@ class MinilodonTest(unittest.TestCase):
         self.bot.on_part(self.connection, self.event)
         self.bot.on_leave.assert_called_once_with('victim')
         self.bot.log.assert_called_once_with('target', 'victim left target')
+
+    def test_leave(self):
+        self.bot.alone = 'user2'
+        channel = Mock()
+        channel.users = Mock(return_value=['user1'])
+        self.bot.channels = {'#channel': channel}
+        self.bot.remove_kicker = Mock()
+        self.bot.on_leave('user2')
+        self.assertEqual(self.bot.alone, 'user1')
+        self.bot.remove_kicker.assert_any_call('user1')
+        self.bot.remove_kicker.assert_any_call('user2')
 
     def test_quit(self):
         self.event.target = '#channel'
