@@ -236,7 +236,7 @@ class VideoTest(unittest.TestCase):
         self.assertEqual(result, '[extractor] title ')
         mockYDL.extract_info.return_value = None
 
-    def test_no_views(self):
+    def test_with_views(self):
         mockYDL.extract_info.return_value = {'extractor_key': 'extractor',
                                              'title': 'title',
                                              'view_count': 1000}
