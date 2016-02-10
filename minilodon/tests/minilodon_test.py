@@ -111,3 +111,63 @@ class MinilodonTest(unittest.TestCase):
         self.bot.on_quit(self.connection, self.event)
         self.bot.on_leave.assert_called_once_with('nick')
         self.bot.log.assert_called_with('#channel', 'nick quit')
+
+    def test_kick_self_main(self):
+        self.event.target = '#channel'
+        self.event.arguments = ['nick', 'rea', 'son']
+        with self.assertRaises(Exception) as cm:
+            self.bot.on_kick(self.connection, self.event)
+        error = cm.exception
+        self.assertEqual(str(error), 'Kicked from #channel by nick (rea son)')
+
+    def test_kick_self_other(self):
+        self.event.arguments = ['nick', 'rea', 'son']
+        self.bot.send_msg = Mock()
+        log = Mock()
+        self.bot.logs = {'target': log}
+        self.bot.extrachannels = ['target']
+        self.bot.on_kick(self.connection, self.event)
+        self.bot.send_msg.assert_called_once_with('Kicked from target by nick (rea son)', True)
+        log.close.assert_called_once_with()
+        self.assertEqual(self.bot.logs, {})
+        self.assertEqual(self.bot.extrachannels, [])
+
+    def test_kick_other(self):
+        self.event.target = '#channel'
+        self.event.arguments = ['victim', 'rea', 'son']
+        self.bot.on_leave = Mock()
+        self.bot.log = Mock()
+        self.bot.on_kick(self.connection, self.event)
+        self.bot.on_leave.assert_called_with('victim')
+        self.bot.log.assert_called_with('#channel', 'victim was kicked from #channel by nick (rea son)')
+
+    def test_join_main(self):
+        self.bot.extrachannels = []
+        self.bot.join('#channel')
+        self.assertEqual(self.bot.extrachannels, [])
+        self.assertFalse(self.connection.join.called)
+
+    def test_join_existing(self):
+        self.bot.extrachannels = ['#target']
+        self.bot.join('#target')
+        self.assertEqual(self.bot.extrachannels, ['#target'])
+        self.assertFalse(self.connection.join.called)
+
+    def test_join(self):
+        self.bot.extrachannels = []
+        self.bot.join('#target')
+        self.assertEqual(self.bot.extrachannels, ['#target'])
+        self.connection.join.assert_called_once_with('#target')
+
+    def test_part_invalid(self):
+        self.bot.extrachannels = []
+        self.bot.send_msg = Mock()
+        self.bot.part('#target')
+        self.bot.send_msg.assert_called_once_with('Channel #target never joined via !join', True)
+        self.assertFalse(self.connection.part.called)
+
+    def test_part(self):
+        self.bot.extrachannels = ['#target']
+        self.bot.part('#target')
+        self.assertEqual(self.bot.extrachannels, [])
+        self.connection.part.assert_called_once_with('#target')
