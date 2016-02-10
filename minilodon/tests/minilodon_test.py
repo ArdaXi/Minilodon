@@ -24,6 +24,7 @@ class MinilodonTest(unittest.TestCase):
         self.bot = Minilodon('config.json')
         self.connection = Mock()
         self.connection.get_nickname.return_value = 'nick'
+        self.bot.connection = self.connection
         mask = NickMask.from_params('nick', 'user', 'host')
         self.event = Event(type=None, source=mask, target='target',
                            arguments=['arg1', 'arg2'])
@@ -64,3 +65,49 @@ class MinilodonTest(unittest.TestCase):
         self.assertEqual(self.connection.join.call_count, 2)
         self.connection.join.assert_any_call('#controlchannel')
         self.connection.join.assert_called_with('#channel')
+
+    def test_pubmsg(self):
+        self.bot.log = Mock()
+        self.bot.on_pubmsg(self.connection, self.event)
+        self.bot.log.assert_called_once_with('target', '<nick> arg1 arg2')
+
+    def test_action(self):
+        self.bot.log = Mock()
+        self.bot.on_pubmsg_main = Mock()
+        self.event.target = '#channel'
+        self.bot.on_action(self.connection, self.event)
+        self.bot.log.assert_called_once_with('#channel', 'nick arg1 arg2')
+        self.bot.on_pubmsg_main.assert_called_once_with(self.event)
+
+    def test_banned(self):
+        self.bot.extrachannels = ['arg1']
+        self.bot.send_msg = Mock()
+        self.bot.on_bannedfromchan(self.connection, self.event)
+        self.bot.send_msg.assert_called_once_with('Failed to join channel arg1', True)
+        self.assertEqual(self.bot.extrachannels, [])
+
+    def test_part_self(self):
+        self.bot.send_msg = Mock()
+        log = Mock()
+        self.bot.logs = {'target': log}
+        self.bot.on_part(self.connection, self.event)
+        self.bot.send_msg.assert_called_once_with('Left target', True)
+        log.close.assert_called_once_with()
+        self.assertEqual(self.bot.logs, {})
+
+    def test_part_other(self):
+        mask = NickMask.from_params('victim', 'user', 'host')
+        self.event.source = mask
+        self.bot.on_leave = Mock()
+        self.bot.log = Mock()
+        self.bot.on_part(self.connection, self.event)
+        self.bot.on_leave.assert_called_once_with('victim')
+        self.bot.log.assert_called_once_with('target', 'victim left target')
+
+    def test_quit(self):
+        self.event.target = '#channel'
+        self.bot.on_leave = Mock()
+        self.bot.log = Mock()
+        self.bot.on_quit(self.connection, self.event)
+        self.bot.on_leave.assert_called_once_with('nick')
+        self.bot.log.assert_called_with('#channel', 'nick quit')
