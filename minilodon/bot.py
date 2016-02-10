@@ -174,7 +174,7 @@ def load_actions():
                     return actions[category][key].format(victim=victim,
                                                          nick=nick)
                 elif key not in bot.commands:
-                    return "Didn't find {} in {}.".format(key, category)
+                    return
             bot.commands[category] = lookup
         _(category)
 

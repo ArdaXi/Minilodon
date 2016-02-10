@@ -1,7 +1,7 @@
 import itertools
 import unittest
 import time
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, MagicMock, patch
 
 from freezegun import freeze_time
 
@@ -66,6 +66,10 @@ class UpdateTest(unittest.TestCase):
         self.assertEqual(len(result), 2)
         self.assertEqual(result[0], 'Warning: Entry too long, message will be wrapped.')
         self.assertEqual(result[1], 'key added to category.')
+
+    def test_updateme_noargs(self):
+        result = bot.updateme('nick', ['updateme'])
+        self.assertEqual(result[:6], 'Usage:')
 
     @patch('minilodon.bot.update')
     def test_updateme(self, _update):
@@ -199,6 +203,25 @@ class ListTest(unittest.TestCase):
                                                  'Alle category: key')
         self.assertEqual(result, 'Zie prive voor een lijst van alle opties.')
 
+class MessageTest(unittest.TestCase):
+    @patch('minilodon.bot.video')
+    def test_video(self, _video):
+        bot.spy_function = None
+        list(bot.on_message('nick', 'http://example.com'))
+        _video.assert_called_once_with('http://example.com')
+
+    @patch('minilodon.bot.video')
+    def test_novideo(self, _video):
+        bot.spy_function = None
+        list(bot.on_message('nick', 'gopher://example.com'))
+        self.assertFalse(_video.called)
+
+    def test_spy(self):
+        bot.spy_function = Mock()
+        list(bot.on_message('nick', 'Hello World!'))
+        bot.spy_function.assert_called_once_with('nick', 'Hello World!')
+        bot.spy_function = None
+
 class VideoTest(unittest.TestCase):
     def test_error(self):
         mockYDL.extract_info.side_effect = bot.DownloadError('')
@@ -221,3 +244,26 @@ class VideoTest(unittest.TestCase):
         self.assertEqual(result, '[extractor] title | 1,000 views')
         mockYDL.extract_info.return_value = None
 
+class ActionsTest(unittest.TestCase):
+    @patch('builtins.open')
+    @patch('json.load')
+    def test_parse(self, _load, _open):
+        bot.parse_actions('file.json')
+        _open.assert_called_once_with('file.json')
+        _load.assert_called_once()
+
+    @patch('minilodon.bot.parse_actions')
+    def test_load(self, _parse_actions):
+        _parse_actions.return_value = {'category': {'key': '{victim} {nick}'}}
+        bot.bot.commands = {}
+        bot.load_actions()
+        self.assertIn('category', bot.bot.commands)
+        lookup = bot.bot.commands['category']
+        result = lookup('nick', ['category'])
+        self.assertIsNone(result)
+        result = lookup('nick', ['category', 'key'])
+        self.assertEqual(result, 'nick nick')
+        result = lookup('nick', ['category', 'key', 'victim'])
+        self.assertEqual(result, 'victim nick')
+        result = lookup('nick', ['category', 'false'])
+        self.assertIsNone(result)
