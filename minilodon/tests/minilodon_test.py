@@ -74,6 +74,45 @@ class MinilodonTest(unittest.TestCase):
         self.bot.on_pubmsg(self.connection, self.event)
         self.bot.log.assert_called_once_with('target', '<nick> arg1 arg2')
 
+    def test_pubmsg_main(self):
+        self.bot.log = Mock()
+        self.bot.kickers = {}
+        self.bot.add_kicker = Mock()
+        self.bot.send_msg = Mock()
+        self.bot.do_command = Mock(return_value='msg')
+        on_message = Mock(return_value='msg2')
+        self.bot.on_message = [on_message]
+        self.event.target = '#channel'
+        self.event.arguments = ['!command arg1']
+        self.bot.on_pubmsg(self.connection, self.event)
+        self.bot.add_kicker.assert_called_once_with('nick')
+        self.bot.do_command.assert_called_once_with(self.event, 'command arg1')
+        on_message.assert_called_once_with('nick', '!command arg1')
+        self.bot.send_msg.assert_called_with('msg2')
+        self.bot.send_msg.assert_any_call('msg')
+
+    def test_pubmsg_main2(self):
+        self.bot.log = Mock()
+        kicker = Mock()
+        self.bot.kickers = {'nick': kicker}
+        self.bot.on_message = None
+        self.event.target = '#channel'
+        self.bot.on_pubmsg(self.connection, self.event)
+        kicker.reset.assert_called_once_with()
+
+    def test_pubmsg_control(self):
+        self.bot.log = Mock()
+        self.event.target = '#controlchannel'
+        self.event.arguments = ['!command arg1']
+        self.bot.send_msg = Mock()
+        self.bot.do_control_command = Mock(return_value='msg1')
+        self.bot.do_command = Mock(return_value='msg2')
+        self.bot.on_pubmsg(self.connection, self.event)
+        self.bot.do_command.assert_called_once_with(self.event, 'command arg1')
+        self.bot.do_control_command.assert_called_once_with(self.event, 'command arg1')
+        self.bot.send_msg.assert_any_call('msg1', True)
+        self.bot.send_msg.assert_any_call('msg2', True)
+
     def test_action(self):
         self.bot.log = Mock()
         self.bot.on_pubmsg_main = Mock()
@@ -286,7 +325,7 @@ class MinilodonTest(unittest.TestCase):
         self.bot.send_priv_msg.assert_any_call('target', 'a')
 
     @patch('minilodon.util.wrap_msg')
-    def test_send_msg_wrap(self, _wrap_msg):
+    def test_send_priv_msg_wrap(self, _wrap_msg):
         _wrap_msg.return_value = 'wrapped'
         send_priv_msg = self.bot.send_priv_msg
         self.bot.send_priv_msg = Mock()
@@ -295,12 +334,12 @@ class MinilodonTest(unittest.TestCase):
         _wrap_msg.assert_called_once_with(longstr)
         self.bot.send_priv_msg.assert_called_once_with('target', 'wrapped')
 
-    def test_send_msg_action(self):
+    def test_send_priv_msg_action(self):
         self.bot.send_priv_action = Mock()
         self.bot.send_priv_msg('target', '/me tests')
         self.bot.send_priv_action.assert_called_once_with('target', 'tests')
 
-    def test_send_msg(self):
+    def test_send_priv_msg(self):
         self.bot.send_priv_msg('target', 'Hello World!')
         self.connection.privmsg.assert_called_once_with('target', 'Hello World!')
 
