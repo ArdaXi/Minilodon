@@ -168,7 +168,8 @@ class Minilodon(irc.bot.SingleServerIRCBot):
                 del self.logs[e.target]
                 self.extrachannels.remove(channel)
         else:
-            self.on_leave(kickee)
+            if channel == self.channel:
+                self.on_leave(kickee)
             self.log(channel,
                      "{} was kicked from {} by {} ({})".format(kickee, channel,
                                                                kicker, reason))
@@ -281,7 +282,7 @@ class Minilodon(irc.bot.SingleServerIRCBot):
             for line in msg:
                 self.send_priv_msg(target, line)
             return
-        if len(msg) > 511:
+        if len(msg) > 254:
             return self.send_priv_msg(target, util.wrap_msg(msg))
         if msg[:3] == '/me':
             return self.send_priv_action(target, msg[4:])
