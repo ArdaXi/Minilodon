@@ -9,14 +9,22 @@ import minilodon.util as util
 
 class UtilTest(unittest.TestCase):
     @freeze_time('01-01-01')
-    def test_open(self):
-        with patch('builtins.open') as _open, \
-             patch('os.path.exists') as _exists:
-            _exists.return_value = True
-            logfile = util.open_log_file('#test')
-            _exists.assert_called_with('#test')
-            _open.assert_called_with('#test/01-01-01-#test.log', 'at', 1)
-            self.assertEqual(logfile.day, 1)
+    @patch('builtins.open')
+    @patch('os.path.exists')
+    def test_open(self, _exists, _open):
+        _exists.return_value = True
+        logfile = util.open_log_file('#test')
+        _exists.assert_called_with('#test')
+        _open.assert_called_with('#test/01-01-01-#test.log', 'at', 1)
+        self.assertEqual(logfile.day, 1)
+
+    @patch('builtins.open')
+    @patch('os.path.exists')
+    @patch('os.mkdir')
+    def test_open_mkdir(self, _mkdir, _exists, _open):
+        _exists.return_value = False
+        util.open_log_file('#test')
+        _mkdir.assert_called_once_with('#test')
 
     def test_wrap_short(self):
         result = list(util.wrap_msg('Hello World!'))
