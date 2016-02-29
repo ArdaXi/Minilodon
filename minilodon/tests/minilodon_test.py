@@ -214,6 +214,7 @@ class MinilodonTest(unittest.TestCase):
         self.event.target = '#channel'
         self.bot.on_leave = Mock()
         self.bot.log = Mock()
+        self.bot.kickers = {'nick': Mock()}
         self.bot.on_quit(self.connection, self.event)
         self.bot.on_leave.assert_called_once_with('nick')
         self.bot.log.assert_called_with('#channel', 'nick quit')
