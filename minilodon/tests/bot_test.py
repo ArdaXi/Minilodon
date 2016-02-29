@@ -266,4 +266,4 @@ class ActionsTest(unittest.TestCase):
         result = lookup('nick', ['category', 'key', 'victim'])
         self.assertEqual(result, 'victim nick')
         result = lookup('nick', ['category', 'false'])
-        self.assertIsNone(result)
+        self.assertEqual(result, 'Kon false niet vinden in category.')
