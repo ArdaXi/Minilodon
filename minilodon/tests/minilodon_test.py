@@ -337,11 +337,14 @@ class MinilodonTest(unittest.TestCase):
     @freeze_time('01-01-01 12:00')
     def test_log(self):
         logfile = Mock(day=0)
+        logfile2 = Mock(day=1)
+        def reopen_logs():
+            self.bot.logs = {'#channel': logfile2}
         self.bot.logs = {'#channel': logfile}
-        self.bot.reopen_logs = Mock()
+        self.bot.reopen_logs = Mock(side_effect=reopen_logs)
         self.bot.log('#channel', 'msg')
         self.bot.reopen_logs.assert_called_once_with()
-        logfile.write.assert_called_once_with('01-01-01 12:00:00 msg\n')
+        logfile2.write.assert_called_once_with('01-01-01 12:00:00 msg\n')
 
     @patch('minilodon.util.open_log_file')
     def test_reopen(self, _open_log_file):
