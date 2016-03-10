@@ -248,6 +248,7 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         curtime = datetime.now()
         if not curtime.day == logfile.day:
             self.reopen_logs()
+            logfile = self.logs[channel]
         timestr = curtime.strftime("%d-%m-%y %H:%M:%S")
         line = "{0} {1}\n".format(timestr, msg)
         logfile.write(line)
