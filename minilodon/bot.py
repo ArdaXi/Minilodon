@@ -21,8 +21,8 @@ def update(nick, args):
     if len(args) < 4:
         yield "Usage: !update <category> <key> <msg>"
         return
-    category = args[1]
-    key = args[2]
+    category = args[1].lower()
+    key = args[2].lower()
     msg = " ".join(args[3:])
     if len(msg) > 254:
         yield "Warning: Entry too long, message will be wrapped."
@@ -53,8 +53,8 @@ def delete(nick, args):
     if len(args) != 3:
         return "Usage: !delete <category> <key>"
     actions = parse_actions("actions.json")
-    category = args[1]
-    key = args[2]
+    category = args[1].lower()
+    key = args[2].lower()
     if category not in actions:
         return "Category {} not found!".format(category)
     if key not in actions[category]:
@@ -167,7 +167,7 @@ def load_actions():
             def lookup(nick, args):
                 if len(args) < 2:
                     return
-                key = args[1]
+                key = args[1].lower()
                 if len(args) > 2:
                     victim = args[2]
                 else:
