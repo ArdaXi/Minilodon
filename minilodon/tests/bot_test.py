@@ -229,6 +229,13 @@ class VideoTest(unittest.TestCase):
         self.assertEqual(result, None)
         mockYDL.extract_info.side_effect = None
 
+    def test_generic(self):
+        mockYDL.extract_info.return_value = {'extractor_key': 'Generic',
+                                             'title': 'title'}
+        result = bot.video('url')
+        self.assertEqual(result, None)
+        mockYDL.extract_info.return_value = None
+
     def test_no_views(self):
         mockYDL.extract_info.return_value = {'extractor_key': 'extractor',
                                              'title': 'title'}
