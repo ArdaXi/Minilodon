@@ -148,7 +148,7 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         self.remove_kicker(nick)
 
     def on_quit(self, c, e):
-        if e.source.nick in self.kickers:
+        if e.source.nick.lower() in self.kickers:
             self.on_leave(e.source.nick)
             self.log(self.channel, "{} quit".format(e.source.nick))
 
