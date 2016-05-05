@@ -2,6 +2,8 @@ from datetime import datetime
 import json
 import logging
 import irc.bot
+import irc.client
+from jaraco.stream import buffer
 
 from minilodon import util
 from minilodon.kicker import Kicker
@@ -15,6 +17,7 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         nickname = config['nick']
         irc.bot.SingleServerIRCBot.__init__(self, [(server, port)], nickname,
                                             nickname)
+        irc.client.ServerConnection.buffer_class = buffer.LenientDecodingLineBuffer
         self.channel = config['mainchannel'].lower()
         self.control_channel = config['controlchannel'].lower()
         self.password = config['password'] if 'password' in config else None
