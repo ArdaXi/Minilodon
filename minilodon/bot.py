@@ -149,12 +149,23 @@ def video(msg):
         return
     if result['extractor_key'] == "Generic":
         return
+    if 'duration' in result and result['duration'] is not None:
+        duration = " [{0}]".format(seconds_to_time(result['duration']))
+    else:
+        duration = ""
     if 'view_count' in result and result['view_count'] is not None:
-        views = "| {:,} views".format(result['view_count'])
+        views = " | {:,} views".format(result['view_count'])
     else:
         views = ""
-    return "[{0}] {1} {2}".format(result['extractor_key'], result['title'],
-                                  views)
+    return "[{0}] {1}{2}{3}".format(result['extractor_key'], result['title'],
+                                    duration, views)
+
+def seconds_to_time(seconds):
+    m, s = divmod(seconds, 60)
+    h, m = divmod(m, 60)
+    if h > 0:
+        return "{0}:{1:02}:{2:02}".format(h, m, s)
+    return "{0}:{1:02}".format(m, s)
 
 def parse_actions(filename):
     with open(filename) as actions_file:

@@ -240,7 +240,7 @@ class VideoTest(unittest.TestCase):
         mockYDL.extract_info.return_value = {'extractor_key': 'extractor',
                                              'title': 'title'}
         result = bot.video('url')
-        self.assertEqual(result, '[extractor] title ')
+        self.assertEqual(result, '[extractor] title')
         mockYDL.extract_info.return_value = None
 
     def test_with_views(self):
@@ -250,6 +250,28 @@ class VideoTest(unittest.TestCase):
         result = bot.video('url')
         self.assertEqual(result, '[extractor] title | 1,000 views')
         mockYDL.extract_info.return_value = None
+
+    def test_with_duration(self):
+        mockYDL.extract_info.return_value = {'extractor_key': 'extractor',
+                                             'title': 'title',
+                                             'duration': 124}
+        result = bot.video('url')
+        self.assertEqual(result, '[extractor] title [2:04]')
+
+    def test_with_hour_duraction(self):
+        mockYDL.extract_info.return_value = {'extractor_key': 'extractor',
+                                             'title': 'title',
+                                             'duration': 3661}
+        result = bot.video('url')
+        self.assertEqual(result, '[extractor] title [1:01:01]')
+
+    def test_with_views_and_duration(self):
+        mockYDL.extract_info.return_value = {'extractor_key': 'extractor',
+                                             'title': 'title',
+                                             'view_count': 1024,
+                                             'duration': 124}
+        result = bot.video('url')
+        self.assertEqual(result, '[extractor] title [2:04] | 1,024 views')
 
 class ActionsTest(unittest.TestCase):
     @patch('builtins.open')
