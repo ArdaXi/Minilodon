@@ -203,6 +203,27 @@ class ListTest(unittest.TestCase):
                                                  'Alle category: key')
         self.assertEqual(result, 'Zie prive voor een lijst van alle opties.')
 
+class RollTest(unittest.TestCase):
+    def test_no_args(self):
+        result = bot.roll('nick', ['roll'])
+        self.assertEqual(result[:6], 'Usage:')
+
+    def test_invalid(self):
+        result = bot.roll('nick', ['roll', 'dice'])
+        self.assertEqual(result[:6], 'Usage:')
+
+    @patch('random.randint', return_value=4)
+    def test_d6(self, _randint):
+        result = bot.roll('nick', ['roll', 'd6'])
+        self.assertEqual(result, 'nick rolled 4.')
+        _randint.assert_called_once_with(1, 6)
+
+    @patch('random.randint', return_value=4)
+    def test_2d6(self, _randint):
+        result = bot.roll('nick', ['roll', '2d6'])
+        self.assertEqual(result, 'nick rolled 4 4.')
+        _randint.assert_called_with(1, 6)
+
 class MessageTest(unittest.TestCase):
     @patch('minilodon.bot.video')
     def test_video(self, _video):

@@ -3,6 +3,8 @@ from threading import Timer
 import json
 import logging
 import time
+import re
+import random
 
 from youtube_dl import YoutubeDL
 from youtube_dl.utils import DownloadError
@@ -15,6 +17,7 @@ ydl = YoutubeDL({'quiet': False, 'logger': logger})
 ydl.add_default_info_extractors()
 spy_function = None
 spy_timer = None
+roll_regex = re.compile(r"([0-9]*)d([0-9]+)")
 
 @bot.command("update", True)
 def update(nick, args):
@@ -134,6 +137,20 @@ def list_all(nick, args):
     msg = "Alle {}: {}".format(category, ", ".join(actions[category].keys()))
     bot.send_priv_msg(nick, msg)
     return "Zie prive voor een lijst van alle opties."
+
+@bot.command("roll")
+def roll(nick, args):
+    if len(args) != 2:
+        return "Usage: !roll [x]dy (d20, 2d6)"
+    amount = 1
+    match = roll_regex.match(args[1])
+    if match is None:
+        return "Usage: !roll [x]dy (d20, 2d6)"
+    if match.group(1) != '':
+        amount = int(match.group(1))
+    die = int(match.group(2))
+    result = [str(random.randint(1, die)) for x in range(amount)]
+    return "{0} rolled {1}.".format(nick, " ".join(result))
 
 @bot.message()
 def on_message(nick, msg):
