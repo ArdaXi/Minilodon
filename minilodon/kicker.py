@@ -35,4 +35,3 @@ class Kicker(Thread):
 
     def changenick(self, nick):
         self.nick = nick
-        self.reset()
