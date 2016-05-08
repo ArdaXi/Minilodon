@@ -49,6 +49,6 @@ class KickerTest(unittest.TestCase):
 
     def test_changenick(self):
         self.kicker.changenick('newnick')
-        self.assertTrue(self.resetter.set.called)
+        self.assertFalse(self.resetter.set.called)
         self.assertEqual(self.kicker.nick, 'newnick')
         self.kicker.changenick('nick')
