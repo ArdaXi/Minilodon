@@ -216,10 +216,13 @@ class Minilodon(irc.bot.SingleServerIRCBot):
     def on_nick(self, c, e):
         old = e.source.nick
         new = e.target
+        if old.lower() == new.lower():
+            self.kickers[new.lower()].changenick(new)
+            return
         if old.lower() in self.kickers:
             self.kickers[new.lower()] = self.kickers[old.lower()]
             self.kickers[new.lower()].changenick(new)
-            del self.kickers[old.lower()]
+            self.remove_kicker(old.lower())
 
     def on_privmsg(self, c, e):
         command = e.arguments[0][1:]

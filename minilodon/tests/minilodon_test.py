@@ -304,6 +304,14 @@ class MinilodonTest(unittest.TestCase):
         kicker.changenick.assert_called_once_with('target')
         self.assertEqual(self.bot.kickers, {'target': kicker})
 
+    def test_nick_case(self):
+        kicker = Mock()
+        self.bot.kickers = {'nick': kicker}
+        self.event.target = 'NICK'
+        self.bot.on_nick(self.connection, self.event)
+        kicker.changenick.assert_called_once_with('NICK')
+        self.assertEqual(self.bot.kickers, {'nick': kicker})
+
     def test_privmsg(self):
         self.event.arguments = ['!command', 'arg']
         self.bot.do_command = Mock()
