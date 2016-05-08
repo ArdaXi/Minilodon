@@ -13,7 +13,7 @@ from minilodon.minilodon import Minilodon
 
 bot = Minilodon("config.json")
 logger = logging.getLogger(__name__)
-ydl = YoutubeDL({'quiet': False, 'logger': logger})
+ydl = YoutubeDL({'quiet': False, 'logger': logger, 'noplaylist': True, 'extract_flat': 'in_playlist'})
 ydl.add_default_info_extractors()
 spy_function = None
 spy_timer = None
