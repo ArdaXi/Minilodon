@@ -148,8 +148,14 @@ def roll(nick, args):
         return "Usage: !roll [x]dy (d20, 2d6)"
     if match.group(1) != '':
         amount = int(match.group(1))
+    if amount > 10:
+        return "Nice try."
     die = int(match.group(2))
+    if die > 100:
+        return "That's not a real die."
     result = [str(random.randint(1, die)) for x in range(amount)]
+    if len(result) > 150:
+        result = result[:150]
     return "{0} rolled {1}.".format(nick, " ".join(result))
 
 @bot.message()
