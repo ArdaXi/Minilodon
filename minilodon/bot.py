@@ -167,7 +167,7 @@ def video(msg):
         result = ydl.extract_info(msg, download=False)
     except DownloadError:
         return
-    if result['extractor_key'] == "Generic":
+    if result['extractor_key'] == "Generic" or 'title' not in result:
         return
     if 'duration' in result and result['duration'] is not None:
         duration = " [{0}]".format(seconds_to_time(result['duration']))
@@ -177,8 +177,11 @@ def video(msg):
         views = " | {:,} views".format(result['view_count'])
     else:
         views = ""
-    return "[{0}] {1}{2}{3}".format(result['extractor_key'], result['title'],
-                                    duration, views)
+    retval = "[{0}] {1}{2}{3}".format(result['extractor_key'], result['title'],
+                                      duration, views)
+    if '\r' in retval or '\n' in retval:
+        return
+    return retval
 
 def seconds_to_time(seconds):
     m, s = divmod(seconds, 60)
