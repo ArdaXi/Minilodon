@@ -28,7 +28,6 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         self.kickers = {}
         self.commands = {}
         self.control_commands = {}
-        self.alone = ''
         self.logger = logging.getLogger(__name__)
 
     def on_nicknameinuse(self, c, e):
@@ -98,16 +97,10 @@ class Minilodon(irc.bot.SingleServerIRCBot):
             self.log(e.target, "{} [{}] joined {}".format(nick, host, channel))
             if channel != self.channel:
                 return
-            if self.alone:
-                self.add_kicker(self.alone)
-                self.alone = ''
             users = [user for user in self.channels[self.channel].users()
                      if user.lower() not in ['chanserv',
                                              c.get_nickname().lower()]]
-            if len(users) == 1:
-                self.alone = users[0]
-            else:
-                self.add_kicker(nick)
+            self.add_kicker(nick)
 
     def on_namreply(self, c, e):
         channel = e.arguments[1].lower()
@@ -117,11 +110,8 @@ class Minilodon(irc.bot.SingleServerIRCBot):
                      if user.strip('@%+').lower() not in ['chanserv',
                                                           c.get_nickname()
                                                            .lower()]]
-            if len(users) == 1:
-                self.alone = users[0]
-            else:
-                for user in users:
-                    self.add_kicker(user)
+            for user in users:
+                self.add_kicker(user)
 
     def on_bannedfromchan(self, c, e):
         channel = e.arguments[0]
@@ -140,14 +130,9 @@ class Minilodon(irc.bot.SingleServerIRCBot):
         self.log(channel, "{} left {}".format(e.source.nick, channel))
 
     def on_leave(self, nick):
-        if self.alone:
-            self.alone = ''
         users = [user for user in self.channels[self.channel].users()
                  if user.lower() not in ['chanserv',
                                          self.connection.get_nickname().lower()]]
-        if len(users) == 1:
-            self.alone = users[0]
-            self.remove_kicker(self.alone)
         self.remove_kicker(nick)
 
     def on_quit(self, c, e):

@@ -100,10 +100,7 @@ def _idle_time_to_string(data):
 
 @bot.command("idle", True)
 def idle(nick, args):
-    if bot.alone:
-        return "{} is alone in the room.".format(bot.alone)
-    else:
-        return map(_idle_time_to_string, bot.get_idle_times())
+    return map(_idle_time_to_string, bot.get_idle_times())
 
 def stop_spy():
     global spy_function
