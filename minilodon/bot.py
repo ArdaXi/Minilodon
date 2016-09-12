@@ -153,10 +153,16 @@ def roll(nick, args):
     die = int(match.group(2))
     if die > 100:
         return "That's not a real die."
-    result = [str(random.randint(1, die)) for x in range(amount)]
+    result = _die(die, amount)
     if len(result) > 150:
         result = result[:150]
-    return "{0} rolled {1}.".format(nick, " ".join(result))
+    return "{0} rolled: {1}".format(nick, " ".join(result))
+
+def _die(die, amount):
+    if die == 6:
+        return [chr(9855 + random.randint(1, die)) for x in range(amount)]
+    else:
+        return [str(random.randint(1, die)) for x in range(amount)]
 
 @bot.message()
 def on_message(nick, msg):
