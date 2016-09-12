@@ -223,14 +223,20 @@ class RollTest(unittest.TestCase):
     @patch('random.randint', return_value=4)
     def test_d6(self, _randint):
         result = bot.roll('nick', ['roll', 'd6'])
-        self.assertEqual(result, 'nick rolled 4.')
+        self.assertEqual(result, 'nick rolled: ⚃')
         _randint.assert_called_once_with(1, 6)
 
     @patch('random.randint', return_value=4)
     def test_2d6(self, _randint):
         result = bot.roll('nick', ['roll', '2d6'])
-        self.assertEqual(result, 'nick rolled 4 4.')
+        self.assertEqual(result, 'nick rolled: ⚃ ⚃')
         _randint.assert_called_with(1, 6)
+
+    @patch('random.randint', return_value=16)
+    def test_2d20(self, _randint):
+        result = bot.roll('nick', ['roll', '2d20'])
+        self.assertEqual(result, 'nick rolled: 16 16')
+        _randint.assert_called_with(1, 20)
 
 class MessageTest(unittest.TestCase):
     @patch('minilodon.bot.video')
