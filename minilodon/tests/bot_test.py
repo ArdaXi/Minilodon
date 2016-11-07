@@ -216,8 +216,16 @@ class RollTest(unittest.TestCase):
         result = bot.roll('nick', ['roll', '9001d6'])
         self.assertEqual(result, 'Nice try.')
 
+    def test_toolittle(self):
+        result = bot.roll('nick', ['roll', '0d6'])
+        self.assertEqual(result, 'Nice try.')
+
     def test_toobig(self):
         result = bot.roll('nick', ['roll', 'd9001'])
+        self.assertEqual(result, "That's not a real die.")
+
+    def test_toosmall(self):
+        result = bot.roll('nick', ['roll', 'd0'])
         self.assertEqual(result, "That's not a real die.")
 
     @patch('random.randint', return_value=4)
