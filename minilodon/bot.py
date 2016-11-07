@@ -145,10 +145,10 @@ def roll(nick, args):
         return "Usage: !roll [x]dy (d20, 2d6)"
     if match.group(1) != '':
         amount = int(match.group(1))
-    if amount > 10:
+    if amount > 10 or amount < 1:
         return "Nice try."
     die = int(match.group(2))
-    if die > 100:
+    if die > 100 or die < 1:
         return "That's not a real die."
     result = _die(die, amount)
     if len(result) > 150:
